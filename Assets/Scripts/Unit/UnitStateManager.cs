@@ -6,11 +6,6 @@ public class UnitStateManager : MonoBehaviour
 {
     private IUnitState _state;
 
-    private void Start()
-    {
-        SetState(new IdleState());
-    }
-
     private void Update()
     {
         _state?.Update();
@@ -21,13 +16,13 @@ public class UnitStateManager : MonoBehaviour
         _state?.FixedUpdate();
     }
 
-    public void SetState(IUnitState state)
+    public void SetState(IUnitState state, UnitController unitController, Vector3 destination = default)
     {
         if(_state != null)
         {
             _state.Exit();
         }
         _state = state;
-        _state.Enter();
+        _state.Enter(unitController, destination);
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IUnitState
 {
-    public void Enter();
+    public void Enter(UnitController unitController, Vector3 destination);
     public void Exit();
     public void Update();
     public void FixedUpdate();
@@ -12,7 +12,7 @@ public interface IUnitState
 
 public class IdleState : IUnitState
 {
-    public void Enter()
+    public void Enter(UnitController unitController, Vector3 destination)
     {
         
     }
@@ -38,20 +38,19 @@ public class MoveState : IUnitState
     private UnitController _unitController;
     private Vector3 _destination;
 
-    public MoveState(UnitController unit, Vector3 destination)
+    public void Enter(UnitController unitController, Vector3 destination)
     {
-        _unitController = unit;
+        _unitController = unitController;
         _destination = destination;
-    }
-
-    public void Enter()
-    {
-        
+        if(_unitController != null && _destination != null)
+        {
+            _unitController.MoveTo(_destination);
+        }
     }
 
     public void Exit()
     {
-        
+        _unitController.MoveStop();
     }
 
     public void FixedUpdate()
@@ -61,6 +60,9 @@ public class MoveState : IUnitState
 
     public void Update()
     {
-        
+        if(_unitController.IsArrive())
+        {
+            _unitController.UnitStateManager.SetState(new IdleState(), _unitController);
+        }
     }
 }
