@@ -7,7 +7,7 @@ public class MoveCommand : ICommand
     private UnitController _unitController;
     private Vector3 _destination;
 
-    public MoveCommand(UnitController unit, Vector3 destination, UnitStateManager state)
+    public MoveCommand(UnitController unit, Vector3 destination)
     {
         _unitController = unit;
         _destination = destination;

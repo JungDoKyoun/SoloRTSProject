@@ -17,8 +17,9 @@ public class UnitSelectionHandler : MonoBehaviour
     private List<UnitController> _selectUnit = new List<UnitController>();
     private Camera _cam;
     private Vector2 _startPos;
-    private bool _isDragging = false;
     private const int _maxUnitSelectCount = 24;
+    private bool _isDragging = false;
+    private bool _isAttackMove = false;
 
     private void Start()
     {
@@ -28,8 +29,17 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void Update()
     {
+        PushButton();
         HandleSelectionInput();
         HandleCommand();
+    }
+
+    private void PushButton()
+    {
+        if(Input.GetKeyDown(KeyCode.A))
+        {
+            _isAttackMove = true;
+        }
     }
 
     private void HandleSelectionInput()
@@ -41,12 +51,47 @@ public class UnitSelectionHandler : MonoBehaviour
 
             if(Physics.Raycast(ray, out hit, 100f))
             {
+                Debug.Log("Raycast Hit: " + hit.collider.name);
                 int layer = hit.collider.gameObject.layer;
+
+                if(_isAttackMove && ((1 << layer)& _enemy) != 0)
+                {
+                    var target = hit.collider.GetComponent<UnitController>();
+                    if(target != null)
+                    {
+                        foreach(var unit in _selectUnit)
+                        {
+                            if(unit.IsPlayerUnit)
+                            {
+                                new AttackCommand(unit, target).Execute();
+                            }
+                        }
+                        _isAttackMove = false;
+                        return;
+                    }
+                }
+
+                if(_isAttackMove && ((1 << layer)& _groundLayer) != 0)
+                {
+                    Vector3 detination = hit.point;
+
+                    foreach(var unit in _selectUnit)
+                    {
+                        if (unit.IsPlayerUnit)
+                        {
+                            new MoveAttackCommand(unit, detination).Execute();
+                        }
+                    }
+                    _isAttackMove = false;
+                    return;
+                }
 
                 if(((1 << layer)& _unitLayer) != 0)
                 {
+                    Debug.Log("À¯´Ö ·¹ÀÌ¾î¿¡ Å¬¸¯µÊ: " + hit.collider.name);
                     DeselectAll();
                     var unit = hit.collider.GetComponent<UnitController>();
+                    Debug.Log(unit);
 
                     if(unit != null)
                     {
@@ -137,14 +182,28 @@ public class UnitSelectionHandler : MonoBehaviour
 
             if(Physics.Raycast(ray,out hit, 100f))
             {
-                foreach(var unit in _selectUnit)
-                {
-                    if (!unit.IsPlayerUnit)
-                    {
-                        continue;
-                    }
+                int layer = hit.collider.gameObject.layer;
 
-                    new MoveCommand(unit, hit.point, unit.UnitStateManager).Execute();
+                if(((1 << layer)& _enemy) != 0)
+                {
+                    var target = hit.collider.GetComponent<UnitController>();
+
+                    foreach(var unit in _selectUnit)
+                    {
+                        if(unit.IsPlayerUnit)
+                        {
+                            new AttackCommand(unit, target).Execute();
+                        }
+                    }
+                    return;
+                }
+
+                foreach (var unit in _selectUnit)
+                {
+                    if (unit.IsPlayerUnit)
+                    {
+                        new MoveCommand(unit, hit.point).Execute();
+                    }
                 }
             }
         }

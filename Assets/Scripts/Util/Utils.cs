@@ -14,4 +14,11 @@ public static class Utils
 
         return Rect.MinMaxRect(leftTop.x, leftTop.y, rightBottom.x, rightBottom.y);
     }
+
+    public static double GetTime()
+    {
+        return GameModManager.IsMultiplayer
+            ? Photon.Pun.PhotonNetwork.Time
+            : Time.time;
+    }
 }

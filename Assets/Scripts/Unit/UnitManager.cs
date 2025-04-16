@@ -9,6 +9,7 @@ public class UnitManager : MonoBehaviour
     [HideInInspector] public UnitController UnitController { get; private set; }
     [HideInInspector] public NavMeshAgent NavMeshAgent { get; private set; }
     [HideInInspector] public Renderer Renderer { get; private set; }
+    [HideInInspector] public Animator Anime { get; private set; }
 
     private void Awake()
     {
@@ -16,6 +17,7 @@ public class UnitManager : MonoBehaviour
         UnitController = GetComponent<UnitController>();
         NavMeshAgent = GetComponent<NavMeshAgent>();
         Renderer = GetComponent<Renderer>();
+        Anime = GetComponent<Animator>();
         UnitController.Init(this);
     }
 }

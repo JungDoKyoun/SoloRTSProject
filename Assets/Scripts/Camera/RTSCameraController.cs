@@ -36,19 +36,19 @@ public class RTSCameraController : MonoBehaviour
         Vector3 mousePos = Input.mousePosition;
         Vector3 pos = transform.position;
 
-        if (mousePos.x < edgeX || Input.GetKey(KeyCode.A))
+        if (mousePos.x < edgeX)
         {
             dir.x -= 1;
         }
-        if (mousePos.x > Screen.width - edgeX || Input.GetKey(KeyCode.D))
+        if (mousePos.x > Screen.width - edgeX)
         {
             dir.x += 1;
         }
-        if(mousePos.y < edgeZ || Input.GetKey(KeyCode. S))
+        if(mousePos.y < edgeZ)
         {
             dir.z -= 1;
         }
-        if(mousePos.y > Screen.height - edgeZ || Input.GetKey(KeyCode.W))
+        if(mousePos.y > Screen.height - edgeZ)
         {
             dir.z += 1;
         }
