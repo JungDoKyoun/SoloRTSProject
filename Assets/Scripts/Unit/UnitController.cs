@@ -226,6 +226,9 @@ public class UnitController : MonoBehaviour
 
     public void Attack()
     {
+        PlayAnime("Attack");
+        _isAttack = true;
+        _lastAttack = Utils.GetTime();
         StartCoroutine(AttackCo());
     }
 
@@ -258,12 +261,9 @@ public class UnitController : MonoBehaviour
 
     private IEnumerator AttackCo()
     {
-        PlayAnime("Attack");
-        _isAttack = true;
-
+        yield return null;
         yield return new WaitUntil(() => _anime.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1);
 
-        _lastAttack = Utils.GetTime();
         _isAttack = false;
     }
 }
