@@ -1,5 +1,7 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,14 +10,16 @@ public enum TeamType
     Player, Ally, Enemy
 }
 
-public class UnitController : MonoBehaviour
+public class UnitController : MonoBehaviourPunCallbacks
 {
-    [SerializeField] UnitDataSO _unitData;
+    [SerializeField] Transform _firePoin;
     private NavMeshAgent _agent;
     private Renderer _renderer;
+    private UnitDataSO _unitData;
     private UnitStateManager _unitStateManager;
     private UnitController _target; //유닛이 타겟으로 지정할 목표
     private Animator _anime;
+    private IAttackStrategy _attackStrategy;
     private TeamType _teamType;
     private Vector3 _moveDestination;
     private int _maxHP;
@@ -26,6 +30,7 @@ public class UnitController : MonoBehaviour
     private bool _isManualAttack = false;
     private bool _isAttack = false;
 
+    public Transform FirePoin { get { return _firePoin; } }
     public UnitDataSO UnitData { get { return _unitData; } }
     public UnitStateManager UnitStateManager { get { return _unitStateManager; } }
     public float CurrentHP { get { return _currentHP; } set { _currentHP = value; } }
@@ -41,12 +46,6 @@ public class UnitController : MonoBehaviour
         UnitRegistry.Instance.Register(this);
     }
 
-    private void OnEnable()
-    {
-        SetTeam(TeamType.Player);
-        UnitRegistry.Instance.Register(this);
-    }
-
     private void OnDisable()
     {
         if (UnitRegistry.Instance != null)
@@ -55,14 +54,27 @@ public class UnitController : MonoBehaviour
         }
     }
 
+    public void OnHit()
+    {
+        if(_target == null || _target.IsDie)
+        {
+            return;
+        }
+
+        _attackStrategy.ExecuteAttack(this, _target);
+        Debug.Log(_attackStrategy);
+    }
+
     public void Init(UnitManager unitManager)
     {
         _agent = unitManager.NavMeshAgent;
         _renderer = unitManager.Renderer;
         _unitStateManager = unitManager.UnitStateManager;
         _anime = unitManager.Anime;
+        _unitData = unitManager.UnitDataSO;
 
         _unitStateManager.SetState(new IdleState(), this);
+        SetAttackType();
         _agent.updateRotation = false;
         _agent.angularSpeed = 0f; 
         _agent.acceleration = 1000f;
@@ -77,11 +89,28 @@ public class UnitController : MonoBehaviour
         _teamType = team;
     }
 
+    private void SetAttackType()
+    {
+        switch(_unitData.AttackType)
+        {
+            case AttackType.Melee:
+                {
+                    _attackStrategy = new MeleeAttack();
+                    break;
+                }
+            case AttackType.Ranged:
+                {
+                    _attackStrategy = new RangedAttack();
+                    break;
+                }
+        }
+    }
+
     public void PlayAnime(string animeName)
     {
         if(GameModManager.IsMultiplayer)
         {
-
+            photonView.RPC("RPCTriggerAnime", RpcTarget.All, animeName);
         }
 
         else
@@ -90,17 +119,29 @@ public class UnitController : MonoBehaviour
         }
     }
 
+    [PunRPC]
+    private void RPCTriggerAnime(string animeName)
+    {
+        _anime.SetTrigger(animeName);
+    }
+
     public void PlayAnime(string animeName, bool TorF)
     {
         if (GameModManager.IsMultiplayer)
         {
-
+            photonView.RPC("RPCBoolAnime", RpcTarget.All, animeName, TorF);
         }
 
         else
         {
             _anime.SetBool(animeName, TorF);
         }
+    }
+
+    [PunRPC]
+    private void RPCBoolAnime(string animeName, bool TorF)
+    {
+        _anime.SetBool(animeName, TorF);
     }
 
     public void MoveTo(Vector3 destination)
@@ -137,10 +178,7 @@ public class UnitController : MonoBehaviour
 
             dir.y = 0;
 
-            if(_agent.velocity.sqrMagnitude > 0.01)
-            {
-                transform.rotation = Quaternion.LookRotation(dir);
-            }
+            transform.rotation = Quaternion.LookRotation(dir);
         }
     }
 
@@ -215,7 +253,7 @@ public class UnitController : MonoBehaviour
 
             float distance = Vector3.Distance(transform.position, other.transform.position);
 
-            if(distance <= minDist)
+            if(distance <= minDist && !other.IsDie)
             {
                 minDist = distance;
                 target = other;
@@ -245,16 +283,49 @@ public class UnitController : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        _currentHP -= damage;
+        _currentHP -= Mathf.Max(1, damage - _unitData.Defend);
 
         if(_currentHP <= 0)
         {
             _currentHP = 0;
             Die();
+
+            if(GameModManager.IsMultiplayer && PhotonNetwork.IsMasterClient)
+            {
+                photonView.RPC("SynceDie", RpcTarget.Others);
+            }
+        }
+
+        if (GameModManager.IsMultiplayer && PhotonNetwork.IsMasterClient)
+        {
+            photonView.RPC("SynceHP", RpcTarget.Others, _currentHP);
         }
     }
 
+    [PunRPC]
+    public void RPCTakeDamage(float damage)
+    {
+        if(_isDie)
+        {
+            return;
+        }
+
+        TakeDamage(damage);
+    }
+
+    [PunRPC]
+    private void SynceHP(float HP)
+    {
+        _currentHP = HP;
+    }
+
     public void Die()
+    {
+        _isDie = true;
+    }
+
+    [PunRPC]
+    private void SynceDie()
     {
         _isDie = true;
     }

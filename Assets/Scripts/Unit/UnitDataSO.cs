@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum AttackType
+{
+    Melee, Ranged
+}
+
 [CreateAssetMenu(fileName = "UnitData", menuName = "Unit/UnitDataSO")]
 public class UnitDataSO : ScriptableObject
 {
@@ -12,12 +17,14 @@ public class UnitDataSO : ScriptableObject
 
     [Header("스텟")]
     public int MaxHp;
-    public int AttackRange;
-    public int DetectRange;
+    public float AttackRange;
+    public float DetectRange;
     public float MoveSpeed;
     public float Damage;
     public float Defend;
     public double AttackCoolTime;
 
-    //[Header("기타 항목")]
+    [Header("기타 항목")]
+    public AttackType AttackType;
+    public ProjectileDataSO ProjectileData;
 }

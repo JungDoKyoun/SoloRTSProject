@@ -168,7 +168,9 @@ public class AttackState : IUnitState
 
     public void Update()
     {
-        if(!_unitController.IsAttack)
+        _unitController.RotateToTarget(_target);
+
+        if (!_unitController.IsAttack)
         {
             if (_target == null || _target.IsDie)
             {
@@ -192,8 +194,6 @@ public class AttackState : IUnitState
                 }
                 return;
             }
-
-            _unitController.RotateToTarget(_target);
 
             if (_unitController.CanAttack())
             {

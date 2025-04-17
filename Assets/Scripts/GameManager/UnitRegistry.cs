@@ -20,18 +20,6 @@ public class UnitRegistry : MonoBehaviour
     }
     public List<UnitController> AllUnits { get { return _allUnits; } }
 
-    private void Awake()
-    {
-        if(_instance == null)
-        {
-            _instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
     public void Register(UnitController unit)
     {
         if(!_allUnits.Contains(unit))

@@ -5,6 +5,7 @@ using UnityEngine.AI;
 
 public class UnitManager : MonoBehaviour
 {
+    [SerializeField] private UnitDataSO _unitDataSo;
     [HideInInspector] public UnitStateManager UnitStateManager { get; private set; }
     [HideInInspector] public UnitController UnitController { get; private set; }
     [HideInInspector] public NavMeshAgent NavMeshAgent { get; private set; }
@@ -20,4 +21,6 @@ public class UnitManager : MonoBehaviour
         Anime = GetComponent<Animator>();
         UnitController.Init(this);
     }
+
+    public UnitDataSO UnitDataSO { get { return _unitDataSo; } }
 }
