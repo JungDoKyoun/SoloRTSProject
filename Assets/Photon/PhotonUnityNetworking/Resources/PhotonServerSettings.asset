@@ -47,6 +47,10 @@ MonoBehaviour:
   - SynceDie
   - SynceHP
   - RPCTakeDamage
+  - RPCAssignWorker
+  - RPCDestroyResources
+  - SyncReduceAmount
+  - RPCUpdateAmount
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

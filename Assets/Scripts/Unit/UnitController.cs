@@ -1,52 +1,73 @@
 using Photon.Pun;
 using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.AI;
 
 public enum TeamType
 {
-    Player, Ally, Enemy
+    Ally, Enemy
 }
 
 public class UnitController : MonoBehaviourPunCallbacks
 {
-    [SerializeField] Transform _firePoin;
+    [Header("공용")]
     private NavMeshAgent _agent;
     private Renderer _renderer;
     private UnitDataSO _unitData;
     private UnitStateManager _unitStateManager;
     private UnitController _target; //유닛이 타겟으로 지정할 목표
     private Animator _anime;
-    private IAttackStrategy _attackStrategy;
+    private Player _player;
     private TeamType _teamType;
+    private UnitType _unitType;
     private Vector3 _moveDestination;
     private int _maxHP;
-    private double _lastAttack;
     private float _currentHP;
     private bool _isSelect = false;
     private bool _isDie = false;
+
+    [Header("공격관련")]
+    private IAttackStrategy _attackStrategy;
+    private double _lastAttack;
     private bool _isManualAttack = false;
     private bool _isAttack = false;
+
+    [Header("원거리 관련")]
+    [SerializeField] Transform _firePoin;
+
+    [Header("일꾼관련")]
+    private Resources _currentResources;
+    private int _maxCarryAmount;
+    private int _currentCarryAmount;
+    private int _gatherAmountPerTick;
+    private float _gatherTickInterval;
+    private float _gatherSearchRadius;
+    private bool _isGather = false;
+    private bool _isFull = false;
+    private Coroutine _gatherCoroutine;
 
     public Transform FirePoin { get { return _firePoin; } }
     public UnitDataSO UnitData { get { return _unitData; } }
     public UnitStateManager UnitStateManager { get { return _unitStateManager; } }
+    public UnitType UnitType { get { return _unitType; } }
     public float CurrentHP { get { return _currentHP; } set { _currentHP = value; } }
     public bool IsSelect { get { return _isSelect; } set { _isSelect = value; } }
-    public bool IsPlayerUnit => _teamType == TeamType.Player;
     public bool IsDie { get { return _isDie; } set { _isDie = value; } }
     public bool IsManualAttack { get { return _isManualAttack; } set { _isManualAttack = value; } }
     public bool IsAttack { get { return _isAttack; } set { _isAttack = value; } }
+    public bool IsGather { get { return _isGather; } set { _isGather = value; } }
+    public bool IsFull { get { return _isFull; } set { _isFull = value; } }
+
+    //Player만들고 오류 해결하면 지워라
+    public bool IsPlayerUnit;
 
     private void Start()
     {
-        SetTeam(TeamType.Player);
+        SetTeam(TeamType.Ally);
         UnitRegistry.Instance.Register(this);
     }
 
-    private void OnDisable()
+    private new void OnDisable()
     {
         if (UnitRegistry.Instance != null)
         {
@@ -56,7 +77,7 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void OnHit()
     {
-        if(_target == null || _target.IsDie)
+        if (_target == null || _target.IsDie)
         {
             return;
         }
@@ -76,11 +97,16 @@ public class UnitController : MonoBehaviourPunCallbacks
         _unitStateManager.SetState(new IdleState(), this);
         SetAttackType();
         _agent.updateRotation = false;
-        _agent.angularSpeed = 0f; 
+        _agent.angularSpeed = 0f;
         _agent.acceleration = 1000f;
         _agent.stoppingDistance = 0f;
         _agent.speed = _unitData.MoveSpeed;
         _maxHP = _unitData.MaxHp;
+        _unitType = _unitData.UnitType;
+        _maxCarryAmount = _unitData.MaxCarryAmount;
+        _gatherAmountPerTick = _unitData.GatherAmountPerTick;
+        _gatherTickInterval = _unitData.GatherTickInterval;
+        _gatherSearchRadius = _unitData.GatherSearchRadius;
         _currentHP = _maxHP;
     }
 
@@ -89,9 +115,19 @@ public class UnitController : MonoBehaviourPunCallbacks
         _teamType = team;
     }
 
+    public void SetPlayer(Player player)
+    {
+        _player = player;
+    }
+
+    //public bool IsPlayerUnit(Player player)
+    //{
+    //    return _player == player;
+    //}
+
     private void SetAttackType()
     {
-        switch(_unitData.AttackType)
+        switch (_unitData.AttackType)
         {
             case AttackType.Melee:
                 {
@@ -108,7 +144,7 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void PlayAnime(string animeName)
     {
-        if(GameModManager.IsMultiplayer)
+        if (GameModManager.IsMultiplayer)
         {
             photonView.RPC("RPCTriggerAnime", RpcTarget.All, animeName);
         }
@@ -154,16 +190,16 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void RotateToMoveDirection(bool onlyWhenMoving = true)
     {
-        if(!_agent.pathPending && _agent.hasPath)
+        if (!_agent.pathPending && _agent.hasPath)
         {
-            if(onlyWhenMoving && _agent.velocity.sqrMagnitude < 0.01f)
+            if (onlyWhenMoving && _agent.velocity.sqrMagnitude < 0.01f)
             {
                 return;
             }
 
             Vector3 dir = _agent.desiredVelocity;
 
-            if(_agent.velocity.sqrMagnitude > 0.01f)
+            if (_agent.velocity.sqrMagnitude > 0.01f)
             {
                 transform.rotation = Quaternion.LookRotation(dir);
             }
@@ -172,7 +208,7 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void RotateToTarget(UnitController target)
     {
-        if(target != null)
+        if (target != null)
         {
             Vector3 dir = target.transform.position - transform.position;
 
@@ -203,7 +239,7 @@ public class UnitController : MonoBehaviourPunCallbacks
         return _moveDestination;
     }
 
-    public void SetTarget(UnitController target , bool isManualAttack)
+    public void SetTarget(UnitController target, bool isManualAttack)
     {
         _target = target;
         _isManualAttack = isManualAttack;
@@ -222,19 +258,14 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public bool IsEnemy(UnitController me, UnitController other)
     {
-        if(me._teamType == TeamType.Player)
+        if (me._teamType == TeamType.Ally)
         {
             return other._teamType == TeamType.Enemy;
         }
 
-        if(me._teamType == TeamType.Ally)
+        if (me._teamType == TeamType.Enemy)
         {
-            return other._teamType == TeamType.Enemy;
-        }
-
-        if(me._teamType == TeamType.Enemy)
-        {
-            return other._teamType == TeamType.Player || other._teamType == TeamType.Ally;
+            return other._teamType == TeamType.Ally;
         }
         return false;
     }
@@ -244,16 +275,16 @@ public class UnitController : MonoBehaviourPunCallbacks
         float minDist = _unitData.DetectRange;
         UnitController target = null;
 
-        foreach(var other in UnitRegistry.Instance.AllUnits)
+        foreach (var other in UnitRegistry.Instance.AllUnits)
         {
-            if(other == null || other == this || !IsEnemy(this, other))
+            if (other == null || other == this || !IsEnemy(this, other))
             {
                 continue;
             }
 
             float distance = Vector3.Distance(transform.position, other.transform.position);
 
-            if(distance <= minDist && !other.IsDie)
+            if (distance <= minDist && !other.IsDie)
             {
                 minDist = distance;
                 target = other;
@@ -270,6 +301,11 @@ public class UnitController : MonoBehaviourPunCallbacks
         StartCoroutine(AttackCo());
     }
 
+    public void StopAttack()
+    {
+        _isAttack = false;
+    }
+
     public bool CanAttack()
     {
         double currentTime = Utils.GetTime();
@@ -284,28 +320,36 @@ public class UnitController : MonoBehaviourPunCallbacks
     public void TakeDamage(float damage)
     {
         _currentHP -= Mathf.Max(1, damage - _unitData.Defend);
-
-        if(_currentHP <= 0)
+        if (GameModManager.IsMultiplayer)
         {
-            _currentHP = 0;
-            Die();
-
-            if(GameModManager.IsMultiplayer && PhotonNetwork.IsMasterClient)
+            if (!PhotonNetwork.IsMasterClient)
             {
-                photonView.RPC("SynceDie", RpcTarget.Others);
+                return;
             }
+
+            photonView.RPC("SynceHP", RpcTarget.All, _currentHP);
         }
 
-        if (GameModManager.IsMultiplayer && PhotonNetwork.IsMasterClient)
+        if (_currentHP <= 0)
         {
-            photonView.RPC("SynceHP", RpcTarget.Others, _currentHP);
+            Die();
+
+            if (GameModManager.IsMultiplayer)
+            {
+                if (!PhotonNetwork.IsMasterClient)
+                {
+                    return;
+                }
+
+                photonView.RPC("SynceDie", RpcTarget.All);
+            }
         }
     }
 
     [PunRPC]
     public void RPCTakeDamage(float damage)
     {
-        if(_isDie)
+        if (_isDie)
         {
             return;
         }
@@ -330,11 +374,90 @@ public class UnitController : MonoBehaviourPunCallbacks
         _isDie = true;
     }
 
+    public void SetResources(Resources resources)
+    {
+        _currentResources = resources;
+    }
+
+    public Resources GetResources()
+    {
+        return _currentResources;
+    }
+
+    public void StartGather()
+    {
+        if (_currentResources == null || !_currentResources.IsAvailable())
+        {
+            return;
+        }
+
+        if(_gatherCoroutine != null)
+        {
+            StopCoroutine(_gatherCoroutine);
+        }
+
+        _currentResources.AssignWorker(this);
+        _isGather = true;
+
+        _gatherCoroutine = StartCoroutine(GatherCO());
+    }
+
+    public void StopGather()
+    {
+        if(_currentResources != null && _currentResources.CurrentWorker == this)
+        {
+            _currentResources.CurrentWorker = null;
+        }
+
+        if (_gatherCoroutine != null)
+        {
+            StopCoroutine(_gatherCoroutine);
+            _gatherCoroutine = null;
+        }
+        _isGather = false;
+        _currentResources = null;
+
+    }
+
     private IEnumerator AttackCo()
     {
         yield return null;
         yield return new WaitUntil(() => _anime.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1);
 
         _isAttack = false;
+    }
+
+    private IEnumerator GatherCO()
+    {
+        while(_isGather && _currentResources != null)
+        {
+            if(!_isGather || _currentResources == null)
+            {
+                yield break;
+            }
+
+            yield return new WaitForSeconds(_gatherTickInterval);
+
+            int gatherAmount = Mathf.Min(_gatherAmountPerTick, _currentResources.RemainAmount);
+            _currentCarryAmount += gatherAmount;
+
+            if(GameModManager.IsMultiplayer)
+            {
+                if(PhotonNetwork.IsMasterClient)
+                {
+                    _currentResources.ReduceAmount(gatherAmount);
+                }
+            }
+            else
+            {
+                _currentResources.ReduceAmount(gatherAmount);
+            }
+
+            if(_currentCarryAmount >= _maxCarryAmount)
+            {
+                _isFull = true;
+                yield break;
+            }
+        }
     }
 }

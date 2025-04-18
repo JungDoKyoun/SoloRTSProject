@@ -1,13 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.WSA;
 
 public enum AttackType
 {
     Melee, Ranged
 }
 
-[CreateAssetMenu(fileName = "UnitData", menuName = "Unit/UnitDataSO")]
+public enum UnitType
+{
+    Normal,Worker
+}
+
+[CreateAssetMenu(fileName = "UnitData", menuName = "SO/UnitDataSO", order = 0)]
 public class UnitDataSO : ScriptableObject
 {
     [Header("기본 정보")]
@@ -25,6 +31,14 @@ public class UnitDataSO : ScriptableObject
     public double AttackCoolTime;
 
     [Header("기타 항목")]
+    public UnitType UnitType;
     public AttackType AttackType;
     public ProjectileDataSO ProjectileData;
+
+    [Header("일꾼 관련")]
+    //public bool Gather;
+    public int MaxCarryAmount;
+    public int GatherAmountPerTick;
+    public float GatherTickInterval;
+    public float GatherSearchRadius;
 }
