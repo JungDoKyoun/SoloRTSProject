@@ -5,9 +5,9 @@ using UnityEngine;
 public class GatherCommand : ICommand
 {
     private UnitController _unitController;
-    private Resources _resources;
+    private Resource _resources;
 
-    public GatherCommand(UnitController unitController, Resources resources)
+    public GatherCommand(UnitController unitController, Resource resources)
     {
         _unitController = unitController;
         _resources = resources;

@@ -18,7 +18,6 @@ public class UnitController : MonoBehaviourPunCallbacks
     private UnitController _target; //유닛이 타겟으로 지정할 목표
     private Animator _anime;
     private Player _player;
-    private TeamType _teamType;
     private UnitType _unitType;
     private Vector3 _moveDestination;
     private int _maxHP;
@@ -36,12 +35,12 @@ public class UnitController : MonoBehaviourPunCallbacks
     [SerializeField] Transform _firePoin;
 
     [Header("일꾼관련")]
-    private Resources _currentResources;
+    private Resource _currentResources;
+    private ResourcesType _currentResourceType;
     private int _maxCarryAmount;
     private int _currentCarryAmount;
     private int _gatherAmountPerTick;
     private float _gatherTickInterval;
-    private float _gatherSearchRadius;
     private bool _isGather = false;
     private bool _isFull = false;
     private Coroutine _gatherCoroutine;
@@ -49,8 +48,11 @@ public class UnitController : MonoBehaviourPunCallbacks
     public Transform FirePoin { get { return _firePoin; } }
     public UnitDataSO UnitData { get { return _unitData; } }
     public UnitStateManager UnitStateManager { get { return _unitStateManager; } }
+    public Player Player { get { return _player; } }
     public UnitType UnitType { get { return _unitType; } }
+    public ResourcesType CurrentResourceType { get { return _currentResourceType; } }
     public float CurrentHP { get { return _currentHP; } set { _currentHP = value; } }
+    public int CurrentCarryAmount { get { return _currentCarryAmount; } set { _currentCarryAmount = value; } }
     public bool IsSelect { get { return _isSelect; } set { _isSelect = value; } }
     public bool IsDie { get { return _isDie; } set { _isDie = value; } }
     public bool IsManualAttack { get { return _isManualAttack; } set { _isManualAttack = value; } }
@@ -59,11 +61,10 @@ public class UnitController : MonoBehaviourPunCallbacks
     public bool IsFull { get { return _isFull; } set { _isFull = value; } }
 
     //Player만들고 오류 해결하면 지워라
-    public bool IsPlayerUnit;
+    //public bool IsPlayerUnit;
 
     private void Start()
     {
-        SetTeam(TeamType.Ally);
         UnitRegistry.Instance.Register(this);
     }
 
@@ -106,13 +107,7 @@ public class UnitController : MonoBehaviourPunCallbacks
         _maxCarryAmount = _unitData.MaxCarryAmount;
         _gatherAmountPerTick = _unitData.GatherAmountPerTick;
         _gatherTickInterval = _unitData.GatherTickInterval;
-        _gatherSearchRadius = _unitData.GatherSearchRadius;
         _currentHP = _maxHP;
-    }
-
-    public void SetTeam(TeamType team)
-    {
-        _teamType = team;
     }
 
     public void SetPlayer(Player player)
@@ -120,10 +115,10 @@ public class UnitController : MonoBehaviourPunCallbacks
         _player = player;
     }
 
-    //public bool IsPlayerUnit(Player player)
-    //{
-    //    return _player == player;
-    //}
+    public bool IsPlayerUnit(Player player)
+    {
+        return _player == player;
+    }
 
     private void SetAttackType()
     {
@@ -256,16 +251,20 @@ public class UnitController : MonoBehaviourPunCallbacks
         return _target;
     }
 
-    public bool IsEnemy(UnitController me, UnitController other)
+    public bool IsEnemy(UnitController other)
     {
-        if (me._teamType == TeamType.Ally)
+        if(_player.TeamType != other.Player.TeamType)
         {
-            return other._teamType == TeamType.Enemy;
+            return true;
         }
+        return false;
+    }
 
-        if (me._teamType == TeamType.Enemy)
+    public bool IsAlly(UnitController other)
+    {
+        if(_player.TeamType == other.Player.TeamType)
         {
-            return other._teamType == TeamType.Ally;
+            return true;
         }
         return false;
     }
@@ -277,7 +276,7 @@ public class UnitController : MonoBehaviourPunCallbacks
 
         foreach (var other in UnitRegistry.Instance.AllUnits)
         {
-            if (other == null || other == this || !IsEnemy(this, other))
+            if (other == null || other == this || !IsEnemy(other))
             {
                 continue;
             }
@@ -317,7 +316,7 @@ public class UnitController : MonoBehaviourPunCallbacks
         _isAttack = false;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(int damage)
     {
         _currentHP -= Mathf.Max(1, damage - _unitData.Defend);
         if (GameModManager.IsMultiplayer)
@@ -347,7 +346,7 @@ public class UnitController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    public void RPCTakeDamage(float damage)
+    public void RPCTakeDamage(int damage)
     {
         if (_isDie)
         {
@@ -374,12 +373,13 @@ public class UnitController : MonoBehaviourPunCallbacks
         _isDie = true;
     }
 
-    public void SetResources(Resources resources)
+    public void SetResources(Resource resources)
     {
         _currentResources = resources;
+        _currentResourceType = resources.Type;
     }
 
-    public Resources GetResources()
+    public Resource GetResources()
     {
         return _currentResources;
     }
@@ -396,6 +396,7 @@ public class UnitController : MonoBehaviourPunCallbacks
             StopCoroutine(_gatherCoroutine);
         }
 
+        PlayAnime("Gather", true);
         _currentResources.AssignWorker(this);
         _isGather = true;
 
@@ -414,9 +415,39 @@ public class UnitController : MonoBehaviourPunCallbacks
             StopCoroutine(_gatherCoroutine);
             _gatherCoroutine = null;
         }
+
+        PlayAnime("Gather", false);
         _isGather = false;
         _currentResources = null;
+    }
 
+    public bool IsReturnToBase(out Vector3 destination)
+    {
+        var nearDepot = Utils.FindNearestOwnedDepot(this);
+
+        if(nearDepot != null)
+        {
+            destination = nearDepot.transform.position;
+            SetMoveDestination(destination);
+            return true;
+        }
+        destination = Vector3.zero;
+        return false;
+    }
+
+    public void CarriedResource()
+    {
+        _currentCarryAmount = 0;
+    }
+
+    public bool IsCarryOver()
+    {
+        return _currentCarryAmount <= 0;
+    }
+
+    public bool IsWorker()
+    {
+        return _unitType == UnitType.Worker;
     }
 
     private IEnumerator AttackCo()

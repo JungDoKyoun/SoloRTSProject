@@ -22,15 +22,15 @@ public static class Utils
             : Time.time;
     }
 
-    public static Resources FindNearestAvailableResource(Vector3 workerPos, float radius, ResourcesType resType)
+    public static Resource FindNearestAvailableResource(Vector3 workerPos, float radius, ResourcesType resType)
     {
         Collider[] hits = Physics.OverlapSphere(workerPos, radius, LayerMask.GetMask("Resources"));
-        Resources nearResources = null;
+        Resource nearResources = null;
         float minDistance = float.MaxValue;
 
         foreach(var hit in hits)
         {
-            Resources resources = hit.GetComponent<Resources>();
+            Resource resources = hit.GetComponent<Resource>();
 
             if(resources != null && resources.IsAvailable() && resources.Type == resType)
             {
@@ -44,5 +44,27 @@ public static class Utils
             }
         }
         return nearResources;
+    }
+
+    public static Building FindNearestOwnedDepot(UnitController unit)
+    {
+        var depots = ResourceDepotManager.Instance.GetDepots();
+        Building nearDepot = null;
+        float minDis = float.MaxValue;
+
+        foreach(var depot in depots)
+        {
+            if(depot is Building building && building.IsMyBuilding(unit.Player))
+            {
+                float distance = Vector3.Distance(unit.transform.position, building.transform.position);
+
+                if(minDis > distance)
+                {
+                    minDis = distance;
+                    nearDepot = building;
+                }
+            }
+        }
+        return nearDepot;
     }
 }

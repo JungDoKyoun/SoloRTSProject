@@ -2,17 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BuildingDataSO : MonoBehaviour
+[CreateAssetMenu(fileName = "BuildingData", menuName = "SO/BuildingDataSO", order = 3)]
+public class BuildingDataSO : ScriptableObject
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public string Name;
+    public int MaxHP;
+    public float Sight;
+    public bool IsCanProduceUnits;
+    public List<UnitDataSO> TrainableUnits;
 }

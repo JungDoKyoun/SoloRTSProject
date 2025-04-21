@@ -7,6 +7,6 @@ public class ProjectileDataSO : ScriptableObject
 {
     public string ProjectileName;
     public GameObject ProjectilePrefab;
-    public float Damage;
+    public int Damage;
     public float Speed;
 }

@@ -23,11 +23,11 @@ public class UnitDataSO : ScriptableObject
 
     [Header("스텟")]
     public int MaxHp;
+    public int Damage;
+    public int Defend;
     public float AttackRange;
     public float DetectRange;
     public float MoveSpeed;
-    public float Damage;
-    public float Defend;
     public double AttackCoolTime;
 
     [Header("기타 항목")]
@@ -41,4 +41,5 @@ public class UnitDataSO : ScriptableObject
     public int GatherAmountPerTick;
     public float GatherTickInterval;
     public float GatherSearchRadius;
+    public List<BuildingBlueprintDataSO> BuildingBlueprintDatas;
 }

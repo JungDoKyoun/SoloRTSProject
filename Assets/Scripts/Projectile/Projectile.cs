@@ -65,7 +65,7 @@ public class Projectile : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void RPCTakeDamage(float damage, int targetID, string id)
+    private void RPCTakeDamage(int damage, int targetID, string id)
     {
         var target = PhotonView.Find(targetID).GetComponent<UnitController>();
 

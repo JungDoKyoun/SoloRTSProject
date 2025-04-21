@@ -33,14 +33,14 @@ public class IdleState : IUnitState
 
     public void Update()
     {
-        UnitController target = _unitController.FindTarget();
+        //UnitController target = _unitController.FindTarget();
 
-        if (target != null)
-        {
-            _unitController.SetTarget(target, true);
-            _stateManager.SetState(new ChaseState(), _unitController);
-            return;
-        }
+        //if (target != null)
+        //{
+        //    _unitController.SetTarget(target, true);
+        //    _stateManager.SetState(new ChaseState(), _unitController);
+        //    return;
+        //}
     }
 }
 
@@ -214,7 +214,6 @@ public class MoveAttackState : IUnitState
         _destination = destination;
         _stateManager = unitController.UnitStateManager;
 
-        unitController.SetMoveDestination(_destination);
         unitController.MoveTo(_destination);
     }
 
@@ -258,7 +257,7 @@ public class MoveToGatherState : IUnitState
 {
     private UnitController _unitController;
     private UnitStateManager _stateManager;
-    private Resources _resources;
+    private Resource _resources;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
@@ -314,7 +313,8 @@ public class GatherState : IUnitState
 {
     private UnitController _unitController;
     private UnitStateManager _stateManager;
-    private Resources _resources;
+    private Resource _resources;
+    private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
@@ -339,28 +339,31 @@ public class GatherState : IUnitState
     {
         if(_resources == null || _resources.RemainAmount <= 0)
         {
-            var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _resources.Type);
+            var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _unitController.CurrentResourceType);
 
             if (res != null)
             {
-                Vector3 destination;
-
                 _resources = res;
                 _unitController.SetResources(_resources);
-                destination = _resources.transform.position;
-                _stateManager.SetState(new MoveToGatherState(), _unitController, destination);
+                _destination = _resources.transform.position;
+                _stateManager.SetState(new MoveToGatherState(), _unitController, _destination);
                 return;
             }
-            else if (res == null)
+            else if (res == null && _unitController.IsReturnToBase(out _destination))
             {
-                _stateManager.SetState(new ReturnToBaseState(), _unitController);
+                _stateManager.SetState(new ReturnToBaseState(), _unitController, _destination);
+                return;
+            }
+            else
+            {
+                _stateManager.SetState(new IdleState(), _unitController);
                 return;
             }
         }
 
-        if(_unitController.IsFull)
+        if(_unitController.IsFull && _unitController.IsReturnToBase(out _destination))
         {
-            _stateManager.SetState(new ReturnToBaseState(), _unitController);
+            _stateManager.SetState(new ReturnToBaseState(), _unitController, _destination);
             return;
         }
 
@@ -374,20 +377,24 @@ public class GatherState : IUnitState
 
 public class ReturnToBaseState : IUnitState
 {
-    UnitController _unitController;
+    private UnitController _unitController;
     private UnitStateManager _stateManager;
-    Vector3 _destination;
+    private Resource _resources;
+    private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
         _stateManager = unitController.UnitStateManager;
+        _resources = unitController.GetResources();
         _destination = destination;
+
+        unitController.MoveTo(destination);
     }
 
     public void Exit()
     {
-
+        _unitController.MoveStop();
     }
 
     public void FixedUpdate()
@@ -397,6 +404,37 @@ public class ReturnToBaseState : IUnitState
 
     public void Update()
     {
+        var depot = Utils.FindNearestOwnedDepot(_unitController);
 
+        if(depot != null)
+        {
+            if(_unitController.IsCarryOver())
+            {
+                if(_resources != null && _resources.RemainAmount > 0)
+                {
+                    _stateManager.SetState(new MoveToGatherState(), _unitController, _resources.transform.position);
+                }
+                else
+                {
+                    var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _unitController.CurrentResourceType);
+
+                    if(res != null)
+                    {
+                        _resources = res;
+                        _unitController.SetResources(_resources);
+                        _destination = _resources.transform.position;
+                        _stateManager.SetState(new MoveToGatherState(), _unitController, _destination);
+                    }
+                    else
+                    {
+                        _stateManager.SetState(new IdleState(), _unitController, _destination);
+                    }
+                }
+            }
+        }
+        else
+        {
+            _stateManager.SetState(new IdleState(), _unitController);
+        }
     }
 }

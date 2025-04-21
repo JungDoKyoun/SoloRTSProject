@@ -46,4 +46,9 @@ public class ResourceDepotManager : MonoBehaviour
             _depots.Remove(depot);
         }
     }
+
+    public List<IResourceDepot> GetDepots()
+    {
+        return _depots;
+    }
 }

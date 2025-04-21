@@ -17,6 +17,8 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private List<UnitController> _selectUnit = new List<UnitController>();
     private Camera _cam;
+    private Player _player;
+    [SerializeField] private CommandPanelController _commandPanelController;
     private Vector2 _startPos;
     private const int _maxUnitSelectCount = 24;
     private bool _isDragging = false;
@@ -25,6 +27,7 @@ public class UnitSelectionHandler : MonoBehaviour
     private void Start()
     {
         _cam = Camera.main;
+        _player = PlayerManager.Instance.LocalPlayer;
         _selectBox.gameObject.SetActive(false);
     }
 
@@ -57,7 +60,6 @@ public class UnitSelectionHandler : MonoBehaviour
 
             if(Physics.Raycast(ray, out hit, 100f))
             {
-                Debug.Log("Raycast Hit: " + hit.collider.name);
                 int layer = hit.collider.gameObject.layer;
 
                 if(_isAttackMove && ((1 << layer)& _enemy) != 0)
@@ -67,7 +69,7 @@ public class UnitSelectionHandler : MonoBehaviour
                     {
                         foreach(var unit in _selectUnit)
                         {
-                            if(unit.IsPlayerUnit)
+                            if(unit.IsPlayerUnit(_player))
                             {
                                 new AttackCommand(unit, target).Execute();
                             }
@@ -83,7 +85,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
                     foreach(var unit in _selectUnit)
                     {
-                        if (unit.IsPlayerUnit)
+                        if (unit.IsPlayerUnit(_player))
                         {
                             new MoveAttackCommand(unit, detination).Execute();
                         }
@@ -94,18 +96,15 @@ public class UnitSelectionHandler : MonoBehaviour
 
                 if(((1 << layer)& _unitLayer) != 0)
                 {
-                    Debug.Log("À¯´Ö ·¹ÀÌ¾î¿¡ Å¬¸¯µÊ: " + hit.collider.name);
                     DeselectAll();
                     var unit = hit.collider.GetComponent<UnitController>();
                     Debug.Log(unit);
 
                     if(unit != null)
                     {
-                        if(unit.IsPlayerUnit)
+                        if(unit.IsPlayerUnit(_player))
                         {
-                            unit.IsSelect = true;
-                            _selectUnit.Add(unit);
-                            //À¯´Ö ¼³¸í ¶ç¿ì±â
+                            SelectUnit(unit);
                         }
                         else
                         {
@@ -136,6 +135,13 @@ public class UnitSelectionHandler : MonoBehaviour
         }
     }
 
+    private void SelectUnit(UnitController unit)
+    {
+        unit.IsSelect = true;
+        _selectUnit.Add(unit);
+        _commandPanelController.UpdateForUnit(unit);
+    }
+
     private void UpdateSelectBox(Vector2 startPos, Vector2 mousePos)
     {
         Vector2 size = mousePos - startPos;
@@ -154,7 +160,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
         foreach(var unit in UnitRegistry.Instance.AllUnits)
         {
-            if(!unit.IsPlayerUnit)
+            if(!unit.IsPlayerUnit(_player))
             {
                 continue;
             }
@@ -164,8 +170,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
             if(selectionRect.Contains(screenPos, true) && _selectUnit.Count <= _maxUnitSelectCount)
             {
-                unit.IsSelect = true;
-                _selectUnit.Add(unit);
+                SelectUnit(unit);
             }
         }
     }
@@ -196,7 +201,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
                     foreach(var unit in _selectUnit)
                     {
-                        if(unit.IsPlayerUnit)
+                        if(unit.IsPlayerUnit(_player))
                         {
                             new AttackCommand(unit, target).Execute();
                         }
@@ -204,9 +209,22 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
+                if(((1 << layer)& _resources) != 0)
+                {
+                    var target = hit.collider.GetComponent<Resource>();
+
+                    foreach(var unit in _selectUnit)
+                    {
+                        if(unit.IsPlayerUnit(_player) && unit.IsWorker())
+                        {
+                            new GatherCommand(unit, target).Execute();
+                        }
+                    }
+                }
+
                 foreach (var unit in _selectUnit)
                 {
-                    if (unit.IsPlayerUnit)
+                    if (unit.IsPlayerUnit(_player))
                     {
                         new MoveCommand(unit, hit.point).Execute();
                     }
