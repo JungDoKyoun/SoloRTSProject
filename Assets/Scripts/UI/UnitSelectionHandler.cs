@@ -15,7 +15,8 @@ public class UnitSelectionHandler : MonoBehaviour
     [SerializeField] private LayerMask _resources;
     [SerializeField] private LayerMask _enemy;
 
-    private List<UnitController> _selectUnit = new List<UnitController>();
+    private static UnitSelectionHandler _instance;
+    private List<UnitController> _selectedUnit = new List<UnitController>();
     private Camera _cam;
     private Player _player;
     [SerializeField] private CommandPanelController _commandPanelController;
@@ -23,6 +24,18 @@ public class UnitSelectionHandler : MonoBehaviour
     private const int _maxUnitSelectCount = 24;
     private bool _isDragging = false;
     private bool _isAttackMove = false;
+
+    private void Awake()
+    {
+        if(_instance == null)
+        {
+            _instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
@@ -37,6 +50,20 @@ public class UnitSelectionHandler : MonoBehaviour
         HandleSelectionInput();
         HandleCommand();
     }
+
+    public static UnitSelectionHandler Instance
+    {
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = FindObjectOfType<UnitSelectionHandler>();
+            }
+            return _instance;
+        }
+    }
+
+    public List<UnitController> SelectedUnit { get { return _selectedUnit; } }
 
     private void PushButton()
     {
@@ -67,7 +94,7 @@ public class UnitSelectionHandler : MonoBehaviour
                     var target = hit.collider.GetComponent<UnitController>();
                     if(target != null)
                     {
-                        foreach(var unit in _selectUnit)
+                        foreach(var unit in _selectedUnit)
                         {
                             if(unit.IsPlayerUnit(_player))
                             {
@@ -83,7 +110,7 @@ public class UnitSelectionHandler : MonoBehaviour
                 {
                     Vector3 detination = hit.point;
 
-                    foreach(var unit in _selectUnit)
+                    foreach(var unit in _selectedUnit)
                     {
                         if (unit.IsPlayerUnit(_player))
                         {
@@ -138,8 +165,8 @@ public class UnitSelectionHandler : MonoBehaviour
     private void SelectUnit(UnitController unit)
     {
         unit.IsSelect = true;
-        _selectUnit.Add(unit);
-        _commandPanelController.UpdateForUnit(unit);
+        _selectedUnit.Add(unit);
+        _commandPanelController.UpdateForUnits(_selectedUnit);
     }
 
     private void UpdateSelectBox(Vector2 startPos, Vector2 mousePos)
@@ -168,7 +195,7 @@ public class UnitSelectionHandler : MonoBehaviour
             Vector3 screenPos = _cam.WorldToScreenPoint(unit.transform.position);
             screenPos.y = Screen.height - screenPos.y;
 
-            if(selectionRect.Contains(screenPos, true) && _selectUnit.Count <= _maxUnitSelectCount)
+            if(selectionRect.Contains(screenPos, true) && _selectedUnit.Count <= _maxUnitSelectCount)
             {
                 SelectUnit(unit);
             }
@@ -177,16 +204,17 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void DeselectAll()
     {
-        foreach(var unit in _selectUnit)
+        foreach(var unit in _selectedUnit)
         {
             unit.IsSelect = false;
         }
-        _selectUnit.Clear();
+        _selectedUnit.Clear();
+        _commandPanelController.UpdateForUnit(null);
     }
 
     private void HandleCommand()
     {
-        if(Input.GetMouseButtonDown(1) && _selectUnit.Count > 0)
+        if(Input.GetMouseButtonDown(1) && _selectedUnit.Count > 0)
         {
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -199,7 +227,7 @@ public class UnitSelectionHandler : MonoBehaviour
                 {
                     var target = hit.collider.GetComponent<UnitController>();
 
-                    foreach(var unit in _selectUnit)
+                    foreach(var unit in _selectedUnit)
                     {
                         if(unit.IsPlayerUnit(_player))
                         {
@@ -213,7 +241,7 @@ public class UnitSelectionHandler : MonoBehaviour
                 {
                     var target = hit.collider.GetComponent<Resource>();
 
-                    foreach(var unit in _selectUnit)
+                    foreach(var unit in _selectedUnit)
                     {
                         if(unit.IsPlayerUnit(_player) && unit.IsWorker())
                         {
@@ -222,7 +250,7 @@ public class UnitSelectionHandler : MonoBehaviour
                     }
                 }
 
-                foreach (var unit in _selectUnit)
+                foreach (var unit in _selectedUnit)
                 {
                     if (unit.IsPlayerUnit(_player))
                     {

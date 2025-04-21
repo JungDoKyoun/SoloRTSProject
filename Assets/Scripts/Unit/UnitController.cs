@@ -36,6 +36,7 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     [Header("ÀÏ²Û°ü·Ã")]
     private Resource _currentResources;
+    private Building _building;
     private ResourcesType _currentResourceType;
     private int _maxCarryAmount;
     private int _currentCarryAmount;
@@ -448,6 +449,16 @@ public class UnitController : MonoBehaviourPunCallbacks
     public bool IsWorker()
     {
         return _unitType == UnitType.Worker;
+    }
+
+    public void SetBuilding(Building building)
+    {
+        _building = building;
+    }
+
+    public Building GetBuilding()
+    {
+        return _building;
     }
 
     private IEnumerator AttackCo()

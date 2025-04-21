@@ -19,7 +19,7 @@ public class BuildButton : MonoBehaviour
         _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(() =>
         {
-            //건물 형체 넣는 함수 넣어라
+            BuildGhostPlacer.Instance.StartPlacing(data);
             CommandUIManager.Instance.ShowCommandPanel();
         });
     }

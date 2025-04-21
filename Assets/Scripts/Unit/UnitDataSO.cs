@@ -41,5 +41,6 @@ public class UnitDataSO : ScriptableObject
     public int GatherAmountPerTick;
     public float GatherTickInterval;
     public float GatherSearchRadius;
+    public float BuildDistance;
     public List<BuildingBlueprintDataSO> BuildingBlueprintDatas;
 }

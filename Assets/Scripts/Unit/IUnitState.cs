@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public interface IUnitState
@@ -436,5 +437,76 @@ public class ReturnToBaseState : IUnitState
         {
             _stateManager.SetState(new IdleState(), _unitController);
         }
+    }
+}
+
+public class MoveToBuildstate : IUnitState
+{
+    private UnitController _unitController;
+    private UnitStateManager _stateManager;
+    private Vector3 _destination;
+
+    public void Enter(UnitController unitController, Vector3 destination)
+    {
+        _unitController = unitController;
+        _stateManager = unitController.UnitStateManager;
+        _destination = destination;
+
+        unitController.MoveTo(destination);
+    }
+
+    public void Exit()
+    {
+        _unitController.MoveStop();
+    }
+
+    public void FixedUpdate()
+    {
+        
+    }
+
+    public void Update()
+    {
+        float distance = Vector3.Distance(_unitController.transform.position, _destination);
+
+        if(distance <= _unitController.UnitData.BuildDistance)
+        {
+            _stateManager.SetState(new BuildState(), _unitController, _destination);
+            return;
+        }
+    }
+}
+
+public class BuildState : IUnitState
+{
+    private UnitController _unitController;
+    private UnitStateManager _stateManager;
+    private Vector3 _destination;
+    private Building _building;
+    private GameObject _ghost;
+    private float _progress;
+
+    public void Enter(UnitController unitController, Vector3 destination)
+    {
+        _unitController = unitController;
+        _stateManager = unitController.UnitStateManager;
+        _building = unitController.GetBuilding();
+
+        unitController.PlayAnime("Build", true);
+    }
+
+    public void Exit()
+    {
+        _unitController.PlayAnime("Build", false);
+    }
+
+    public void FixedUpdate()
+    {
+        
+    }
+
+    public void Update()
+    {
+        
     }
 }

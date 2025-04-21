@@ -16,7 +16,7 @@ public class CommandUIManager : MonoBehaviour
         }
         else
         {
-            Destroy(_instance);
+            Destroy(gameObject);
         }
     }
 

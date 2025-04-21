@@ -58,13 +58,23 @@ public class Player
         _resources[type] += amount;
     }
 
-    public bool IsenoughResources(ResourcesType type, int amount)
+    public bool IsenoughResources(List<ResourceCost> costs)
     {
-        return _resources[type] >= amount;
+        foreach(var cost in costs)
+        {
+            if (!_resources.ContainsKey(cost.ResourcesType) || _resources[cost.ResourcesType] < cost.Amount)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
-    public void UseResources(ResourcesType type, int amount)
+    public void UseResources(List<ResourceCost> costs)
     {
-        _resources[type] -= amount;
+        foreach(var cost in costs)
+        {
+            _resources[cost.ResourcesType] -= cost.Amount;
+        }
     }
 }
