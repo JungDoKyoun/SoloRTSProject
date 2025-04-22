@@ -488,21 +488,50 @@ public class UnitController : MonoBehaviourPunCallbacks
         {
             return;
         }
-        var worker = unit.GetComponent<UnitController>();
-
+        player.UseResources(buildData.ResourceCosts);
         var buildGhostObj = PhotonNetwork.Instantiate(buildData.PreviewName, pos, Quaternion.identity);
         var building = buildGhostObj.GetComponent<Building>();
         building.Init(buildData, player);
-
-        worker.SetBuildData(buildData);
-        worker.SetBuilding(building);
+        var collider = buildGhostObj.AddComponent<MeshCollider>();
 
         if (!PhotonNetwork.IsMasterClient)
         {
             return;
         }
+        var worker = unit.GetComponent<UnitController>();
+
+        worker.SetBuildData(buildData);
+        worker.SetBuilding(building);
 
         new BuildCommand(worker, pos, building, buildData).Execute();
+    }
+
+    [PunRPC]
+    public void RPCRequestResumeBuild(int buildingViewID, int workerViewID)
+    {
+        var buildingPhotonView = PhotonView.Find(buildingViewID);
+        var workerPhotonView = PhotonView.Find(workerViewID);
+
+        if (buildingPhotonView == null || workerPhotonView == null)
+        {
+            return;
+        }
+
+        var building = buildingPhotonView.GetComponent<Building>();
+        var worker = workerPhotonView.GetComponent<UnitController>();
+
+        if (!building.IsMyBuilding(worker.Player))
+        {
+            return;
+        };
+
+        worker.SetBuilding(building);
+        worker.SetBuildData(building.GetBuildData());
+
+        Vector3 buildPos = building.transform.position;
+        var buildingData = building.GetBuildData();
+
+        new BuildCommand(worker, buildPos, building, buildingData).Execute() ;
     }
 
     private IEnumerator AttackCo()

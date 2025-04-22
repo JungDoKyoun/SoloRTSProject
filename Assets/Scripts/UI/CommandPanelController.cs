@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CommandPanelController : MonoBehaviour
 {
     [SerializeField] private CommadButton[] _buttons;
-    [SerializeField] private Sprite _attackIcon, _buildIcon;
+    [SerializeField] private Sprite _attackIcon, _buildIcon, _cancleIcon;
     [SerializeField] private BuildPanelController _buildPanelController;
 
     public void ClearAll()
@@ -31,7 +32,7 @@ public class CommandPanelController : MonoBehaviour
         }
         else if (unit.IsWorker())
         {
-            _buttons[8].SetCommandButton(_buildIcon, () => ShowBuild(unit));
+            _buttons[8].SetCommandButton(_buildIcon, () => ShowBuildUI(unit));
         }
     }
 
@@ -53,7 +54,7 @@ public class CommandPanelController : MonoBehaviour
         //여기에 공용 UI업데이트
     }
 
-    public void ShowBuild(UnitController unit)
+    public void ShowBuildUI(UnitController unit)
     {
         ClearAll();
 
@@ -78,5 +79,17 @@ public class CommandPanelController : MonoBehaviour
                 _buttons[i].Clear();
             }
         }
+    }
+
+    public void ShowIncompleteBuildingUI(Building building)
+    {
+        ClearAll();
+
+        _buttons[11].SetCommandButton(_cancleIcon, () => building.CancelConstruct());
+    }
+
+    public void ShowCompleteBuildingUI(Building building)
+    {
+        ClearAll();
     }
 }

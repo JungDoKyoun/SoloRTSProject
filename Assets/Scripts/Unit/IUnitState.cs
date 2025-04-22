@@ -516,12 +516,10 @@ public class BuildState : IUnitState
 
         _building.Construct(Time.deltaTime);
 
-        if(_building.IsComplet)
+        if(_building.IsComplete)
         {
-            var newBuilding = GameObject.Instantiate(_data.BuildingPrefab, _destination, Quaternion.identity);
-            var building = newBuilding.GetComponent<Building>();
-            building.Init(_player, _building.CurrentHP);
-            GameObject.Destroy(_building.gameObject);
+            _building.CompleteConstruction(_destination);
+
             _stateManager.SetState(new IdleState(), _unitController);
         }
     }

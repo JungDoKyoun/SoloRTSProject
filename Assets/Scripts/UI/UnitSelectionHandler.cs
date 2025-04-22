@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,6 +20,7 @@ public class UnitSelectionHandler : MonoBehaviour
     private List<UnitController> _selectedUnit = new List<UnitController>();
     private Camera _cam;
     private Player _player;
+    private Building _selectedBuilding;
     [SerializeField] private CommandPanelController _commandPanelController;
     private Vector2 _startPos;
     private const int _maxUnitSelectCount = 24;
@@ -125,20 +127,26 @@ public class UnitSelectionHandler : MonoBehaviour
                 {
                     DeselectAll();
                     var unit = hit.collider.GetComponent<UnitController>();
-                    Debug.Log(unit);
 
                     if(unit != null)
                     {
-                        if(unit.IsPlayerUnit(_player))
-                        {
-                            SelectUnit(unit);
-                        }
-                        else
-                        {
-                            unit.IsSelect = true;
-                            //나중에 여기에 선택한 유닛 설명 띄우기
-                        }
+                        SelectUnit(unit);
                     }
+                    return;
+                }
+
+                if(((1 << layer)& _buildingLayer) != 0)
+                {
+                    DeselectAll();
+                    var building = hit.collider.GetComponent<Building>();
+
+                    if(building == null)
+                    {
+                        return;
+                    }
+
+                    SelectBuilding(building);
+
                     return;
                 }
 
@@ -165,8 +173,14 @@ public class UnitSelectionHandler : MonoBehaviour
     private void SelectUnit(UnitController unit)
     {
         unit.IsSelect = true;
-        _selectedUnit.Add(unit);
-        _commandPanelController.UpdateForUnits(_selectedUnit);
+
+        if(unit.IsPlayerUnit(_player))
+        {
+            _selectedUnit.Add(unit);
+            _commandPanelController.UpdateForUnits(_selectedUnit);
+        }
+
+        //센터패널
     }
 
     private void UpdateSelectBox(Vector2 startPos, Vector2 mousePos)
@@ -208,8 +222,37 @@ public class UnitSelectionHandler : MonoBehaviour
         {
             unit.IsSelect = false;
         }
+
         _selectedUnit.Clear();
+
+        if(_selectedBuilding != null)
+        {
+            _selectedBuilding.IsSelected = false;
+            _selectedBuilding = null;
+        }
+
         _commandPanelController.UpdateForUnit(null);
+
+        //센터패널도 초기화
+    }
+
+    private void SelectBuilding(Building building)
+    {
+        _selectedBuilding = building;
+        building.IsSelected = true;
+
+        if(building.IsMyBuilding(_player))
+        {
+            if (building.IsComplete)
+            {
+                _commandPanelController.ShowCompleteBuildingUI(building);
+            }
+            else if (!building.IsComplete)
+            {
+                _commandPanelController.ShowIncompleteBuildingUI(building);
+            }
+        }
+        //센터패널 
     }
 
     private void HandleCommand()
@@ -222,8 +265,9 @@ public class UnitSelectionHandler : MonoBehaviour
             if(Physics.Raycast(ray,out hit, 100f))
             {
                 int layer = hit.collider.gameObject.layer;
+                Debug.Log("클릭한 레이어: " + layer);
 
-                if(((1 << layer)& _enemy) != 0)
+                if (((1 << layer)& _enemy) != 0)
                 {
                     var target = hit.collider.GetComponent<UnitController>();
 
@@ -246,6 +290,43 @@ public class UnitSelectionHandler : MonoBehaviour
                         if(unit.IsPlayerUnit(_player) && unit.IsWorker())
                         {
                             new GatherCommand(unit, target).Execute();
+                        }
+                    }
+                }
+
+                if(((1 <<layer)& _buildingLayer) != 0)
+                {
+                    Debug.Log("건물 클릭 감지!");
+                    var building = hit.collider.GetComponent<Building>();
+
+                    if(!building.IsMyBuilding(_player))
+                    {
+                        Debug.Log("내 건물이 아님!");
+                        return;
+                    }
+
+                    var unit = _selectedUnit[0];
+                    var data = building.GetBuildData();
+                    if(unit.IsPlayerUnit(_player) && unit.IsWorker())
+                    {
+                        Debug.Log("내 일꾼이 클릭됨, 건물 이어서 지어야 함!");
+                        if (GameModManager.IsMultiplayer)
+                        {
+                            if(PhotonNetwork.IsMasterClient)
+                            {
+                                Debug.Log("마스터 클라에서 BuildCommand 실행");
+                                new BuildCommand(unit, building.gameObject.transform.position, building, data).Execute();
+                            }
+                            else
+                            {
+                                Debug.Log("RPC로 마스터에게 요청 보냄");
+                                unit.photonView.RPC("RPCRequestResumeBuild", RpcTarget.MasterClient, building.photonView.ViewID, unit.photonView.ViewID);
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("싱글플레이에서 BuildCommand 실행");
+                            new BuildCommand(unit, building.gameObject.transform.position, building, data).Execute();
                         }
                     }
                 }

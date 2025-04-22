@@ -20,7 +20,7 @@ public class DepositTrigger : MonoBehaviour
             {
                 if(_building is IResourceDepot depot)
                 {
-                    depot.ReceiveResource(unit.CurrentResourceType, unit.CurrentCarryAmount);
+                    depot.ReceiveResource(unit.CurrentResourceType, unit.CurrentCarryAmount, unit.Player);
                     unit.CarriedResource();
                 }
             }

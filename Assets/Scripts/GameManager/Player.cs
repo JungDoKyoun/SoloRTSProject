@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -55,7 +56,44 @@ public class Player
 
     public void AddResources(ResourcesType type, int amount)
     {
-        _resources[type] += amount;
+        int currentResources = _resources[type] + amount;
+
+        if(GameModManager.IsMultiplayer)
+        {
+            if(!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            PlayerManager.Instance.SyncPlayerResource(this, type, currentResources);
+        }
+        else
+        {
+            SetResource(type, currentResources);
+        }
+    }
+
+    public void AddResources(List<ResourceCost> costs)
+    {
+        foreach(var cost in costs)
+        {
+            ResourcesType type = cost.ResourcesType;
+            int currentResources = _resources[type] + cost.Amount;
+
+            if (GameModManager.IsMultiplayer)
+            {
+                if (!PhotonNetwork.IsMasterClient)
+                {
+                    return;
+                }
+
+                PlayerManager.Instance.SyncPlayerResource(this, type, currentResources);
+            }
+            else
+            {
+                SetResource(type, currentResources);
+            }
+        }
     }
 
     public bool IsenoughResources(List<ResourceCost> costs)
@@ -72,9 +110,29 @@ public class Player
 
     public void UseResources(List<ResourceCost> costs)
     {
-        foreach(var cost in costs)
+        foreach (var cost in costs)
         {
-            _resources[cost.ResourcesType] -= cost.Amount;
+            ResourcesType type = cost.ResourcesType;
+            int currentResources = _resources[type] - cost.Amount;
+
+            if (GameModManager.IsMultiplayer)
+            {
+                if (!PhotonNetwork.IsMasterClient)
+                {
+                    return;
+                }
+
+                PlayerManager.Instance.SyncPlayerResource(this, type, currentResources);
+            }
+            else
+            {
+                SetResource(type, currentResources);
+            }
         }
+    }
+
+    public void SetResource(ResourcesType type, int newAmount)
+    {
+        _resources[type] = newAmount;
     }
 }

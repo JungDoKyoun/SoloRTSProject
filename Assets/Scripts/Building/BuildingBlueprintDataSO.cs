@@ -13,6 +13,7 @@ public class BuildingBlueprintDataSO : ScriptableObject
     public float BuildTime;
     public Sprite Icon;
     public int MaxHP;
+    public BuildingDataSO buildingData;
 
     [Header("ºñ¿ë")]
     public List<ResourceCost> ResourceCosts;

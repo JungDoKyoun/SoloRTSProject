@@ -1,8 +1,9 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : MonoBehaviourPunCallbacks
 {
     private static PlayerManager _instance;
     private Dictionary<int, Player> _players = new Dictionary<int, Player>();
@@ -67,5 +68,20 @@ public class PlayerManager : MonoBehaviour
     public List<Player> GetAllPlayer()
     {
         return new List<Player>(_players.Values);
+    }
+
+    public void SyncPlayerResource(Player player, ResourcesType type, int newAmount)
+    {
+        photonView.RPC("RPCSyncPlayerResource", RpcTarget.All, player.PlayerID, type, newAmount);
+    }
+
+    [PunRPC]
+    public void RPCSyncPlayerResource(int playerID, ResourcesType type, int newAmount)
+    {
+        var player = GetPlayer(playerID);
+        if(player != null)
+        {
+            player.SetResource(type, newAmount);
+        }
     }
 }

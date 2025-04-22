@@ -5,20 +5,15 @@ using Photon.Pun;
 
 public class Castle : Building, IResourceDepot
 {
-    public void ReceiveResource(ResourcesType type, int amount)
+    public void ReceiveResource(ResourcesType type, int amount, Player player)
     {
-        if(!PhotonNetwork.IsMasterClient)
-        {
-            return;
-        }
-
-        photonView.RPC("RPCReceiveResource", RpcTarget.All, _player.PlayerID, (int)type, amount);
+        player.AddResources(type, amount);
     }
 
     [PunRPC]
-    private void RPCReceiveResource(int playerID, int type, int amount)
+    private void RPCReceiveResource(int playerID, ResourcesType type, int amount)
     {
         var target = PlayerManager.Instance.GetPlayer(playerID);
-        target?.AddResources((ResourcesType)type, amount);
+        target.SetResource(type, amount);
     }
 }

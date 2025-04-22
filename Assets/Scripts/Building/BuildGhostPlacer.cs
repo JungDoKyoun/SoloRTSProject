@@ -151,9 +151,9 @@ public class BuildGhostPlacer : MonoBehaviour
             {
                 if(GameModManager.IsMultiplayer)
                 {
-                    if(PhotonNetwork.IsMasterClient)
+                    if(!_unit.IsPlayerUnit(_player))
                     {
-                        _player.UseResources(_data.ResourceCosts);
+                        return;
                     }
 
                     _unit.photonView.RPC("RPCRequestBuild", Photon.Pun.RpcTarget.All, hit.point, _data.Name, _player.PlayerID, _unit.photonView.ViewID);
@@ -163,6 +163,7 @@ public class BuildGhostPlacer : MonoBehaviour
                 {
                     _building = _ghost.GetComponent<Building>();
                     _building.Init(_data, _player);
+                    MeshCollider collider = _building.gameObject.AddComponent<MeshCollider>();
                     StartBuild(hit.point);
                     _ghost = null;
                 }
