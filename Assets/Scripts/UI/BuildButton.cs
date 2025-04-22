@@ -19,7 +19,7 @@ public class BuildButton : MonoBehaviour
         _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(() =>
         {
-            BuildGhostPlacer.Instance.StartPlacing(data);
+            //BuildGhostPlacer.Instance.StartPlacing(data);
             CommandUIManager.Instance.ShowCommandPanel();
         });
     }

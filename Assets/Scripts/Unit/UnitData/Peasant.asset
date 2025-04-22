@@ -29,3 +29,6 @@ MonoBehaviour:
   GatherAmountPerTick: 0
   GatherTickInterval: 0
   GatherSearchRadius: 0
+  BuildDistance: 5
+  BuildingBlueprintDatas:
+  - {fileID: 11400000, guid: 1a2b11207db85d343bd964f79658dea2, type: 2}

@@ -225,13 +225,11 @@ public class MoveAttackState : IUnitState
 
     public void FixedUpdate()
     {
-
+        _unitController.RotateToMoveDirection();
     }
 
     public void Update()
     {
-        _unitController.RotateToMoveDirection();
-
         if (_unitController.IsArrive())
         {
             _stateManager.SetState(new IdleState(), _unitController);
@@ -278,12 +276,12 @@ public class MoveToGatherState : IUnitState
 
     public void FixedUpdate()
     {
-
+        _unitController.RotateToMoveDirection();
     }
 
     public void Update()
     {
-        if(_resources == null || _resources.RemainAmount <= 0)
+        if (_resources == null || _resources.RemainAmount <= 0)
         {
             var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _resources.Type);
 
@@ -400,7 +398,7 @@ public class ReturnToBaseState : IUnitState
 
     public void FixedUpdate()
     {
-
+        _unitController.RotateToMoveDirection();
     }
 
     public void Update()
@@ -462,7 +460,7 @@ public class MoveToBuildstate : IUnitState
 
     public void FixedUpdate()
     {
-        
+        _unitController.RotateToMoveDirection();
     }
 
     public void Update()
@@ -483,14 +481,17 @@ public class BuildState : IUnitState
     private UnitStateManager _stateManager;
     private Vector3 _destination;
     private Building _building;
-    private GameObject _ghost;
-    private float _progress;
+    private BuildingBlueprintDataSO _data;
+    private Player _player;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
         _stateManager = unitController.UnitStateManager;
+        _destination = destination;
         _building = unitController.GetBuilding();
+        _data = unitController.GetBuildData();
+        _player = _building.Player;
 
         unitController.PlayAnime("Build", true);
     }
@@ -507,6 +508,21 @@ public class BuildState : IUnitState
 
     public void Update()
     {
-        
+        if(_building == null)
+        {
+            _stateManager.SetState(new IdleState(), _unitController);
+            return;
+        }
+
+        _building.Construct(Time.deltaTime);
+
+        if(_building.IsComplet)
+        {
+            var newBuilding = GameObject.Instantiate(_data.BuildingPrefab, _destination, Quaternion.identity);
+            var building = newBuilding.GetComponent<Building>();
+            building.Init(_player, _building.CurrentHP);
+            GameObject.Destroy(_building.gameObject);
+            _stateManager.SetState(new IdleState(), _unitController);
+        }
     }
 }

@@ -6,10 +6,13 @@ using UnityEngine;
 public class BuildingBlueprintDataSO : ScriptableObject
 {
     public string Name;
-    public GameObject BuildingPrefab;
     public GameObject PreviewPrefab;
+    public string PreviewName;
+    public GameObject BuildingPrefab;
+    public string BuildingName;
     public float BuildTime;
     public Sprite Icon;
+    public int MaxHP;
 
     [Header("ºñ¿ë")]
     public List<ResourceCost> ResourceCosts;

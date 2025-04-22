@@ -37,6 +37,7 @@ public class UnitController : MonoBehaviourPunCallbacks
     [Header("ÀÏ²Û°ü·Ã")]
     private Resource _currentResources;
     private Building _building;
+    private BuildingBlueprintDataSO _buildData;
     private ResourcesType _currentResourceType;
     private int _maxCarryAmount;
     private int _currentCarryAmount;
@@ -459,6 +460,49 @@ public class UnitController : MonoBehaviourPunCallbacks
     public Building GetBuilding()
     {
         return _building;
+    }
+
+    public void SetBuildData(BuildingBlueprintDataSO data)
+    {
+        _buildData = data;
+    }
+
+    public BuildingBlueprintDataSO GetBuildData()
+    {
+        return _buildData;
+    }
+
+    [PunRPC]
+    public void RPCRequestBuild(Vector3 pos, string buildDataName, int playerID, int unitID)
+    {
+        var buildData = Resources.Load<BuildingBlueprintDataSO>("BuildingGhostData/" + buildDataName);
+        var player = PlayerManager.Instance.GetPlayer(playerID);
+
+        if(buildData == null || player == null)
+        {
+            return;
+        }
+
+        var unit = PhotonView.Find(unitID);
+        if(unit == null)
+        {
+            return;
+        }
+        var worker = unit.GetComponent<UnitController>();
+
+        var buildGhostObj = PhotonNetwork.Instantiate(buildData.PreviewName, pos, Quaternion.identity);
+        var building = buildGhostObj.GetComponent<Building>();
+        building.Init(buildData, player);
+
+        worker.SetBuildData(buildData);
+        worker.SetBuilding(building);
+
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
+
+        new BuildCommand(worker, pos, building, buildData).Execute();
     }
 
     private IEnumerator AttackCo()

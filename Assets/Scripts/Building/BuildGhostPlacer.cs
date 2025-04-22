@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -7,12 +8,13 @@ public class BuildGhostPlacer : MonoBehaviour
 {
     private static BuildGhostPlacer _instance;
     [SerializeField] private Material _validMat, _invalidMat;
-    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask _groundLayer;
     private GameObject _ghost;
     private Renderer[] _renderers;
     private BuildingBlueprintDataSO _data;
     private UnitController _unit;
     private Player _player;
+    private Building _building;
 
     private void Awake()
     {
@@ -43,7 +45,7 @@ public class BuildGhostPlacer : MonoBehaviour
         }
     }
 
-    public void StartPlacing(BuildingBlueprintDataSO data)
+    public void StartPlacing(BuildingBlueprintDataSO data, UnitController unit)
     {
         _data = data;
 
@@ -52,17 +54,18 @@ public class BuildGhostPlacer : MonoBehaviour
             Destroy(_ghost);
         }
 
-        _unit = UnitSelectionHandler.Instance.SelectedUnit.Find(u => u.IsWorker());
+        _unit = unit;
         if(_unit == null)
         {
             return;
         }
 
         _player = _unit.Player;
-        if(!_player.IsenoughResources(_data.ResourceCosts))
-        {
-            return;
-        }
+
+        //if(!_player.IsenoughResources(_data.ResourceCosts))
+        //{
+        //    return;
+        //}
 
         _ghost = Instantiate(data.PreviewPrefab);
         _renderers = _ghost.GetComponentsInChildren<Renderer>();
@@ -72,19 +75,37 @@ public class BuildGhostPlacer : MonoBehaviour
     {
         Vector3 half = _data.BuildSize * 0.5f;
 
-        if(Physics.OverlapBox(pos, half, Quaternion.identity, LayerMask.GetMask("Unit", "Building", "Resources", "Enemy")).Length > 0)
+        if(Physics.OverlapBox(pos, half, Quaternion.identity, LayerMask.GetMask("Unit", "Building", "Resources")).Length > 0)
         {
             return false;
         }
 
-        if(!Physics.Raycast(pos + Vector3.up * 5f, Vector3.down, 10f, groundLayer))
+        if(!Physics.Raycast(pos + Vector3.up * 0.5f, Vector3.down, 1f, _groundLayer))
         {
             return false;
         }
 
-        if(Physics.OverlapBox(pos, half, Quaternion.identity, groundLayer).Length < 1)
+        Vector3[] checkPoints = new Vector3[]
         {
-            return false;
+            pos + new Vector3(half.x, 0, half.z),
+            pos + new Vector3(half.x, 0, -half.z),
+            pos + new Vector3(-half.x, 0, half.z),
+            pos + new Vector3(-half.x, 0, -half.z)
+        };
+
+        foreach (var point in checkPoints)
+        {
+            if (Physics.Raycast(point + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 1f, _groundLayer))
+            {
+                if (Mathf.Abs(point.y - hit.point.y) > 0.2)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
 
         return true;
@@ -100,9 +121,8 @@ public class BuildGhostPlacer : MonoBehaviour
 
     private void StartBuild(Vector3 des)
     {
-        Destroy(_ghost);
-        _player.UseResources(_data.ResourceCosts);
-        new BuildCommand(_unit, des, _data).Execute();
+        //_player.UseResources(_data.ResourceCosts);
+        new BuildCommand(_unit, des, _building, _data).Execute();
     }
 
     public void UpdateGhost()
@@ -114,8 +134,9 @@ public class BuildGhostPlacer : MonoBehaviour
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        if(Physics.Raycast(ray, out hit, 100f, groundLayer))
+        if(Physics.Raycast(ray, out hit))
         {
+            _ghost.transform.position = hit.point;
             bool isValid = IsValidPosition(hit.point);
 
             if(!isValid)
@@ -128,7 +149,23 @@ public class BuildGhostPlacer : MonoBehaviour
 
             if(Input.GetMouseButtonDown(0))
             {
-                StartBuild(hit.point);
+                if(GameModManager.IsMultiplayer)
+                {
+                    if(PhotonNetwork.IsMasterClient)
+                    {
+                        _player.UseResources(_data.ResourceCosts);
+                    }
+
+                    _unit.photonView.RPC("RPCRequestBuild", Photon.Pun.RpcTarget.All, hit.point, _data.Name, _player.PlayerID, _unit.photonView.ViewID);
+                    _ghost = null;
+                }
+                else
+                {
+                    _building = _ghost.GetComponent<Building>();
+                    _building.Init(_data, _player);
+                    StartBuild(hit.point);
+                    _ghost = null;
+                }
             }
         }
     }
