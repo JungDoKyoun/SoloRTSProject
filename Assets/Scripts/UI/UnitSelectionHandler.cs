@@ -329,6 +329,7 @@ public class UnitSelectionHandler : MonoBehaviour
                             new BuildCommand(unit, building.gameObject.transform.position, building, data).Execute();
                         }
                     }
+                    return;
                 }
 
                 foreach (var unit in _selectedUnit)
