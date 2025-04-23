@@ -6,11 +6,13 @@ public class GatherCommand : ICommand
 {
     private UnitController _unitController;
     private Resource _resources;
+    private Vector3 _destination;
 
-    public GatherCommand(UnitController unitController, Resource resources)
+    public GatherCommand(UnitController unitController, Resource resources, Vector3 destination)
     {
         _unitController = unitController;
         _resources = resources;
+        _destination = destination;
     }
 
     public void Execute()
@@ -20,6 +22,7 @@ public class GatherCommand : ICommand
             return;
         }
         _unitController.SetResources(_resources);
-        _unitController.UnitStateManager.SetState(new MoveToGatherState(), _unitController, _resources.transform.position);
+        _unitController.SetMoveDestination(_destination);
+        _unitController.RequestStateChange("MoveToGatherState", _destination);
     }
 }

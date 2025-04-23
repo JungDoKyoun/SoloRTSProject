@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEngine.GraphicsBuffer;
 
 public class UnitSelectionHandler : MonoBehaviour
 {
@@ -11,10 +12,6 @@ public class UnitSelectionHandler : MonoBehaviour
 
     [Header("레이어")]
     [SerializeField] private LayerMask _groundLayer;
-    [SerializeField] private LayerMask _unitLayer;
-    [SerializeField] private LayerMask _buildingLayer;
-    [SerializeField] private LayerMask _resources;
-    [SerializeField] private LayerMask _enemy;
 
     private static UnitSelectionHandler _instance;
     private List<UnitController> _selectedUnit = new List<UnitController>();
@@ -89,26 +86,35 @@ public class UnitSelectionHandler : MonoBehaviour
 
             if(Physics.Raycast(ray, out hit, 100f))
             {
-                int layer = hit.collider.gameObject.layer;
+                var targetUnit = hit.collider.GetComponent<UnitController>();
+                var targetBuilding = hit.collider.GetComponent<Building>();
+                var targetResource = hit.collider.GetComponent<Resource>();
 
-                if(_isAttackMove && ((1 << layer)& _enemy) != 0)
+                if (_isAttackMove && targetUnit != null && _selectedUnit[0].IsEnemy(targetUnit) && _selectedUnit.Count > 0)
                 {
-                    var target = hit.collider.GetComponent<UnitController>();
-                    if(target != null)
+                    foreach (var unit in _selectedUnit)
                     {
-                        foreach(var unit in _selectedUnit)
+                        if (unit.IsPlayerUnit(_player))
                         {
-                            if(unit.IsPlayerUnit(_player))
-                            {
-                                new AttackCommand(unit, target).Execute();
-                            }
+                            new AttackCommand(unit, targetUnit).Execute();
                         }
-                        _isAttackMove = false;
-                        return;
+                    }
+                    _isAttackMove = false;
+                    return;
+                }
+
+                if(_isAttackMove && targetBuilding != null && _selectedUnit.Count > 0 && _selectedUnit[0].IsEnemy(targetBuilding))
+                {
+                    foreach(var unit in _selectedUnit)
+                    {
+                        if(unit.IsPlayerUnit(_player))
+                        {
+                            new AttackCommand(unit, targetBuilding);
+                        }
                     }
                 }
 
-                if(_isAttackMove && ((1 << layer)& _groundLayer) != 0)
+                if(_isAttackMove && ((1 << hit.collider.gameObject.layer)& _groundLayer) != 0)
                 {
                     Vector3 detination = hit.point;
 
@@ -123,34 +129,20 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
-                if(((1 << layer)& _unitLayer) != 0)
+                if (targetUnit != null)
                 {
-                    DeselectAll();
-                    var unit = hit.collider.GetComponent<UnitController>();
-
-                    if(unit != null)
-                    {
-                        SelectUnit(unit);
-                    }
+                    SelectUnit(targetUnit);
                     return;
                 }
 
-                if(((1 << layer)& _buildingLayer) != 0)
+                if (targetBuilding != null)
                 {
-                    DeselectAll();
-                    var building = hit.collider.GetComponent<Building>();
+                    SelectBuilding(targetBuilding);
 
-                    if(building == null)
-                    {
-                        return;
-                    }
-
-                    SelectBuilding(building);
-
+                    if(targetBuilding.IsPlayerBuilding(_player))
                     return;
                 }
 
-                DeselectAll();
                 _isDragging = true;
                 _startPos = Input.mousePosition;
                 _selectBox.gameObject.SetActive(true);
@@ -172,15 +164,21 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void SelectUnit(UnitController unit)
     {
+        DeselectAll();
+
         unit.IsSelect = true;
 
         if(unit.IsPlayerUnit(_player))
         {
             _selectedUnit.Add(unit);
-            _commandPanelController.UpdateForUnits(_selectedUnit);
+            _commandPanelController.ShowUnitUI(unit);
+        }
+        else
+        {
+            _commandPanelController.ClearAll();
         }
 
-        //센터패널
+        //중앙패널 유닛 정보
     }
 
     private void UpdateSelectBox(Vector2 startPos, Vector2 mousePos)
@@ -199,20 +197,76 @@ public class UnitSelectionHandler : MonoBehaviour
 
         Rect selectionRect = Utils.GetScreenRect(startPos, mousePos);
 
+        List<UnitController> playerUnits = new List<UnitController>();
+        List<UnitController> otherUnits = new List<UnitController>();
+
         foreach(var unit in UnitRegistry.Instance.AllUnits)
         {
-            if(!unit.IsPlayerUnit(_player))
-            {
-                continue;
-            }
-
             Vector3 screenPos = _cam.WorldToScreenPoint(unit.transform.position);
             screenPos.y = Screen.height - screenPos.y;
 
-            if(selectionRect.Contains(screenPos, true) && _selectedUnit.Count <= _maxUnitSelectCount)
+            if(selectionRect.Contains(screenPos, true))
             {
-                SelectUnit(unit);
+                if(unit.IsPlayerUnit(_player))
+                {
+                    playerUnits.Add(unit);
+                }
+                else
+                {
+                    otherUnits.Add(unit);
+                }
             }
+        }
+
+        if(playerUnits.Count == 1)
+        {
+            SelectUnit(playerUnits[0]);
+            return;
+        }
+
+        if(playerUnits.Count > 1)
+        {
+            foreach(var unit in playerUnits)
+            {
+                if(_selectedUnit.Count <= _maxUnitSelectCount)
+                {
+                    unit.IsSelect = true;
+                    _selectedUnit.Add(unit);
+                }
+            }
+            _commandPanelController.ShowUnitsUI(playerUnits);
+            //센터 패널
+            return;
+        }
+        if(playerUnits.Count == 0 && otherUnits.Count > 0)
+        {
+            SelectUnit(otherUnits[0]);
+            return;
+        }
+
+        if(_selectedUnit.Count == 0)
+        {
+            foreach(var building in BuildingRegistry.Instance.AllBuildings)
+            {
+                if(!building.IsPlayerBuilding(_player))
+                {
+                    continue;
+                }
+
+                Vector3 screenPos = _cam.WorldToScreenPoint(building.transform.position);
+                screenPos.y = Screen.height - screenPos.y;
+
+                if(selectionRect.Contains(screenPos, true))
+                {
+                    SelectBuilding(building);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            _commandPanelController.ShowUnitsUI(_selectedUnit);
+            //중앙패널 유닛정보
         }
     }
 
@@ -231,17 +285,19 @@ public class UnitSelectionHandler : MonoBehaviour
             _selectedBuilding = null;
         }
 
-        _commandPanelController.UpdateForUnit(null);
+        _commandPanelController.ClearAll();
 
         //센터패널도 초기화
     }
 
     private void SelectBuilding(Building building)
     {
+        DeselectAll();
+
         _selectedBuilding = building;
         building.IsSelected = true;
 
-        if(building.IsMyBuilding(_player))
+        if(building.IsPlayerBuilding(_player))
         {
             if (building.IsComplete)
             {
@@ -264,69 +320,68 @@ public class UnitSelectionHandler : MonoBehaviour
 
             if(Physics.Raycast(ray,out hit, 100f))
             {
-                int layer = hit.collider.gameObject.layer;
-                Debug.Log("클릭한 레이어: " + layer);
+                var targetUnit = hit.collider.GetComponent<UnitController>();
+                var targetBuilding = hit.collider.GetComponent<Building>();
+                var targetResource = hit.collider.GetComponent<Resource>();
 
-                if (((1 << layer)& _enemy) != 0)
+                if (targetUnit != null && _selectedUnit.Count > 0 && _selectedUnit[0].IsEnemy(targetUnit))
                 {
-                    var target = hit.collider.GetComponent<UnitController>();
-
                     foreach(var unit in _selectedUnit)
                     {
                         if(unit.IsPlayerUnit(_player))
                         {
-                            new AttackCommand(unit, target).Execute();
+                            new AttackCommand(unit, targetUnit).Execute();
                         }
                     }
                     return;
                 }
 
-                if(((1 << layer)& _resources) != 0)
+                if(targetBuilding != null && _selectedUnit.Count > 0&& _selectedUnit[0].IsEnemy(targetBuilding))
                 {
-                    var target = hit.collider.GetComponent<Resource>();
-
                     foreach(var unit in _selectedUnit)
+                    {
+                        if(unit.IsPlayerUnit(_player))
+                        {
+                            new AttackCommand(unit, targetBuilding).Execute();
+                        }
+                    }
+                    return;
+                }
+
+                if(targetResource != null)
+                {
+                    Vector3 destination = targetResource.transform.position;
+
+                    foreach (var unit in _selectedUnit)
                     {
                         if(unit.IsPlayerUnit(_player) && unit.IsWorker())
                         {
-                            new GatherCommand(unit, target).Execute();
+                            new GatherCommand(unit, targetResource, destination).Execute();
                         }
                     }
+                    return;
                 }
 
-                if(((1 <<layer)& _buildingLayer) != 0)
+                if(targetUnit != null && _selectedUnit.Count > 0 && targetBuilding.IsPlayerBuilding(_player))
                 {
-                    Debug.Log("건물 클릭 감지!");
-                    var building = hit.collider.GetComponent<Building>();
-
-                    if(!building.IsMyBuilding(_player))
-                    {
-                        Debug.Log("내 건물이 아님!");
-                        return;
-                    }
-
                     var unit = _selectedUnit[0];
-                    var data = building.GetBuildData();
+                    var data = targetBuilding.GetBuildData();
                     if(unit.IsPlayerUnit(_player) && unit.IsWorker())
                     {
-                        Debug.Log("내 일꾼이 클릭됨, 건물 이어서 지어야 함!");
                         if (GameModManager.IsMultiplayer)
                         {
                             if(PhotonNetwork.IsMasterClient)
                             {
-                                Debug.Log("마스터 클라에서 BuildCommand 실행");
-                                new BuildCommand(unit, building.gameObject.transform.position, building, data).Execute();
+                                new BuildCommand(unit, targetBuilding.gameObject.transform.position, targetBuilding, data).Execute();
                             }
                             else
                             {
-                                Debug.Log("RPC로 마스터에게 요청 보냄");
-                                unit.photonView.RPC("RPCRequestResumeBuild", RpcTarget.MasterClient, building.photonView.ViewID, unit.photonView.ViewID);
+                                unit.photonView.RPC("RPCRequestResumeBuild", RpcTarget.MasterClient, targetBuilding.photonView.ViewID, unit.photonView.ViewID);
                             }
                         }
                         else
                         {
-                            Debug.Log("싱글플레이에서 BuildCommand 실행");
-                            new BuildCommand(unit, building.gameObject.transform.position, building, data).Execute();
+                            new BuildCommand(unit, targetBuilding.gameObject.transform.position, targetBuilding, data).Execute();
                         }
                     }
                     return;

@@ -15,6 +15,7 @@ public class MoveAttackCommand : ICommand
 
     public void Execute()
     {
-        _unitController.UnitStateManager.SetState(new MoveAttackState(), _unitController, _destination);
+        _unitController.SetMoveDestination(_destination);
+        _unitController.RequestStateChange("MoveAttackState", _destination);
     }
 }

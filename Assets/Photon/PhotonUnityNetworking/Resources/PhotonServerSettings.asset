@@ -56,6 +56,14 @@ MonoBehaviour:
   - RPCCompleteConstruction
   - RPCSyncPlayerResource
   - RPCRequestResumeBuild
+  - RPCBroadcastStateChange
+  - RPCRequestStateChange
+  - RPCDie
+  - RPCHP
+  - RPCDestroyBuilding
+  - RPCSyncDie
+  - RPCSyncHP
+  - RPCSyncPlayerSupply
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

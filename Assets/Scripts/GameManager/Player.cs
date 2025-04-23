@@ -16,6 +16,9 @@ public class Player
     private TeamType _teamType;
     private RaceType _raceType;
     private bool _isAI;
+    private const int _maxSupplyCapacity = 200;
+    private int _maxSupply;
+    private int _currentSupply;
 
     public Player(int playerID, string nicName, TeamType teamType, RaceType raceType, bool isAI)
     {
@@ -27,14 +30,18 @@ public class Player
 
         _resources[ResourcesType.Gold] = 50;
         _resources[ResourcesType.Wood] = 0;
+        _maxSupply = 0;
+        _currentSupply = 0;
     }
 
-    public Dictionary<ResourcesType, int> Resources { get { return _resources; } }
-    public int PlayerID { get { return _playerID; } }
-    public string NicName { get { return _nicName; } }
-    public TeamType TeamType { get { return _teamType; } }
-    public RaceType RaceType { get { return _raceType; } }
-    public bool IsAI { get { return _isAI; } }
+    public Dictionary<ResourcesType, int> Resources => _resources;
+    public int PlayerID => _playerID;
+    public string NicName => _nicName;
+    public TeamType TeamType => _teamType;
+    public RaceType RaceType => _raceType;
+    public bool IsAI => _isAI;
+    public int MaxSupply => _maxSupply;
+    public int CurrentSupply => _currentSupply;
 
     public bool IsAlly(Player player)
     {
@@ -134,5 +141,87 @@ public class Player
     public void SetResource(ResourcesType type, int newAmount)
     {
         _resources[type] = newAmount;
+    }
+
+    public void SetSupply(int newMaxSupply, int newCurrentSupply)
+    {
+        _maxSupply = newMaxSupply;
+        _currentSupply = newCurrentSupply;
+    }
+
+    public bool IsCanProduceUnit(int amount)
+    {
+        return _currentSupply + amount <= _maxSupply;
+    }
+
+    public void IncreaseMaxSupply(int amount)
+    {
+        if(GameModManager.IsMultiplayer)
+        {
+            if(!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            _maxSupply = Mathf.Min(_maxSupply + amount, _maxSupplyCapacity);
+            PlayerManager.Instance.SyncPlayerSupply(this, _maxSupply, _currentSupply);
+        }
+        else
+        {
+            _maxSupply = Mathf.Min(_maxSupply + amount, _maxSupplyCapacity);
+        }
+    }
+
+    public void DecreaseMaxSupply(int amount)
+    {
+        if(GameModManager.IsMultiplayer)
+        {
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            _maxSupply -= amount;
+            PlayerManager.Instance.SyncPlayerSupply(this, _maxSupply, _currentSupply);
+        }
+        else
+        {
+            _maxSupply -= amount;
+        }
+    }
+
+    public void IncreaseCurrentSupply(int amount)
+    {
+        if(GameModManager.IsMultiplayer)
+        {
+            if(!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+            _currentSupply += amount;
+            PlayerManager.Instance.SyncPlayerSupply(this, _maxSupply, _currentSupply);
+        }
+        else
+        {
+            _currentSupply += amount;
+        }
+    }
+
+    public void DecreaseCurrentSupply(int amount)
+    {
+        if(GameModManager.IsMultiplayer)
+        {
+            if(!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            _currentSupply = Mathf.Max(0, _currentSupply - amount);
+            PlayerManager.Instance.SyncPlayerSupply(this, _maxSupply, _currentSupply);
+        }
+        else
+        {
+            _currentSupply = Mathf.Max(0, _currentSupply - amount);
+        }
     }
 }

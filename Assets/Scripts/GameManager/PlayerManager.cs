@@ -84,4 +84,20 @@ public class PlayerManager : MonoBehaviourPunCallbacks
             player.SetResource(type, newAmount);
         }
     }
+
+    public void SyncPlayerSupply(Player player, int maxSupply, int currentSupply)
+    {
+        photonView.RPC("RPCSyncPlayerSupply", RpcTarget.All, player.PlayerID, maxSupply, currentSupply);
+    }
+
+    [PunRPC]
+    public void RPCSyncPlayerSupply(int playerID, int maxSupply, int currentSupply)
+    {
+        var player = GetPlayer(playerID);
+
+        if (player != null)
+        {
+            player.SetSupply(maxSupply, currentSupply);
+        }
+    }
 }

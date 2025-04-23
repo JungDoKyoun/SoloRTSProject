@@ -7,7 +7,6 @@ public class CommandPanelController : MonoBehaviour
 {
     [SerializeField] private CommadButton[] _buttons;
     [SerializeField] private Sprite _attackIcon, _buildIcon, _cancleIcon;
-    [SerializeField] private BuildPanelController _buildPanelController;
 
     public void ClearAll()
     {
@@ -17,7 +16,7 @@ public class CommandPanelController : MonoBehaviour
         }
     }
 
-    public void UpdateForUnit(UnitController unit)
+    public void ShowUnitUI(UnitController unit)
     {
         ClearAll();
 
@@ -26,17 +25,15 @@ public class CommandPanelController : MonoBehaviour
             return;
         }
 
-        if (unit.UnitType == UnitType.Normal)
-        {
-
-        }
-        else if (unit.IsWorker())
+        if (unit.IsWorker())
         {
             _buttons[8].SetCommandButton(_buildIcon, () => ShowBuildUI(unit));
         }
+
+        //°ø¿ë
     }
 
-    public void UpdateForUnits(List<UnitController> units)
+    public void ShowUnitsUI(List<UnitController> units)
     {
         ClearAll();
 
@@ -47,7 +44,7 @@ public class CommandPanelController : MonoBehaviour
 
         if (units.Count == 1)
         {
-            UpdateForUnit(units[0]);
+            ShowUnitUI(units[0]);
             return;
         }
 

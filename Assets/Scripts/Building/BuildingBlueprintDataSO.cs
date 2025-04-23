@@ -13,6 +13,7 @@ public class BuildingBlueprintDataSO : ScriptableObject
     public float BuildTime;
     public Sprite Icon;
     public int MaxHP;
+    public int Defend;
     public BuildingDataSO buildingData;
 
     [Header("ºñ¿ë")]

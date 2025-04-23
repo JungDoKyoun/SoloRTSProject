@@ -53,25 +53,25 @@ public class ProjectileSpawner : MonoBehaviourPunCallbacks
         return newPool;
     }
 
-    public void LaunchLocal(ProjectileDataSO data, Transform firePoin, UnitController target)
+    public void LaunchLocal(ProjectileDataSO data, Transform firePoin, IAttackable target)
     {
         string id = Guid.NewGuid().ToString();
         var pool = CreatePool(data);
         var obj = pool.Get();
 
         obj.transform.position = firePoin.position;
-        obj.transform.rotation = Quaternion.LookRotation(target.transform.position - firePoin.position);
+        obj.transform.rotation = Quaternion.LookRotation(target.Position - firePoin.position);
         obj.Init(data, target, id);
 
         _activeProjectile.Add(id, obj);
     }
 
-    public void LaunchMultiplayer(ProjectileDataSO data, Transform firePoin, UnitController target)
+    public void LaunchMultiplayer(ProjectileDataSO data, Transform firePoin, IAttackable target)
     {
         string id = Guid.NewGuid().ToString();
         LaunchLocal(data, firePoin, target);
 
-        if(target.TryGetComponent<PhotonView>(out var view))
+        if(((MonoBehaviour)target).TryGetComponent<PhotonView>(out var view))
         {
             photonView.RPC("RPCLaunch", RpcTarget.Others, data.ProjectileName, firePoin.position, view.ViewID, id);
         }
@@ -116,16 +116,16 @@ public class ProjectileSpawner : MonoBehaviourPunCallbacks
         }
     }
 
-    public void ReleaseMultiplayer(string id)
-    {
-        ReleaseLocal(id);
+    //public void ReleaseMultiplayer(string id)
+    //{
+    //    ReleaseLocal(id);
 
-        photonView.RPC("RPCRelease", RpcTarget.Others, id);
-    }
+    //    photonView.RPC("RPCRelease", RpcTarget.Others, id);
+    //}
 
-    [PunRPC]
-    private void RPCRelease(string id)
-    {
-        ReleaseLocal(id);
-    }
+    //[PunRPC]
+    //private void RPCRelease(string id)
+    //{
+    //    ReleaseLocal(id);
+    //}
 }

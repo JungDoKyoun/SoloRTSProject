@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class BuildCommand : ICommand
 {
-    private UnitController _unit;
+    private UnitController _unitController;
     private Vector3 _destination;
     private BuildingBlueprintDataSO _data;
     private Building _building;
 
     public BuildCommand(UnitController unit, Vector3 destination, Building building, BuildingBlueprintDataSO data)
     {
-        _unit = unit;
+        _unitController = unit;
         _destination = destination;
         _data = data;
         _building = building;
@@ -19,8 +19,9 @@ public class BuildCommand : ICommand
 
     public void Execute()
     {
-        _unit.SetBuilding(_building);
-        _unit.SetBuildData(_data);
-        _unit.UnitStateManager.SetState(new MoveToBuildstate(), _unit, _destination);
+        _unitController.SetBuilding(_building);
+        _unitController.SetBuildData(_data);
+        _unitController.SetMoveDestination(_destination);
+        _unitController.RequestStateChange("MoveToBuildstate", _destination);
     }
 }

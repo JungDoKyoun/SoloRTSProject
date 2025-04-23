@@ -5,9 +5,9 @@ using UnityEngine;
 public class AttackCommand : ICommand
 {
     private UnitController _unitController;
-    private UnitController _target;
+    private IAttackable _target;
 
-    public AttackCommand(UnitController unitController, UnitController target)
+    public AttackCommand(UnitController unitController, IAttackable target)
     {
         _unitController = unitController;
         _target = target;
@@ -16,6 +16,6 @@ public class AttackCommand : ICommand
     public void Execute()
     {
         _unitController.SetTarget(_target, true);
-        _unitController.UnitStateManager.SetState(new ChaseState(), _unitController);
+        _unitController.RequestStateChange("ChaseState");
     }
 }

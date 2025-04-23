@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Building : MonoBehaviourPunCallbacks
+public class Building : MonoBehaviourPunCallbacks, IAttackable
 {
     protected BuildingDataSO _data;
     protected Player _player;
@@ -12,11 +12,24 @@ public class Building : MonoBehaviourPunCallbacks
     protected float _elapseTime;
     protected bool _isComplete;
     protected bool _isSelected = false;
+    protected bool _isDestroy = false;
 
     public Player Player { get { return _player; } }
     public int CurrentHP { get { return _currentHP; } }
-    public bool IsComplete { get { return _isComplete; } }
+    public bool IsComplete { get { return _isComplete; } set { _isComplete = value; } }
     public bool IsSelected { get { return _isSelected; } set { _isSelected = value; } }
+    public bool IsDestroyed { get { return _isDestroy; } set { _isDestroy = value; } }
+    public Vector3 Position => transform.position;
+
+    private void Start()
+    {
+        BuildingRegistry.Instance.Register(this);
+    }
+
+    private new void OnDisable()
+    {
+        BuildingRegistry.Instance.UnRegister(this);
+    }
 
     public void Init(BuildingBlueprintDataSO data, Player player)
     {
@@ -34,16 +47,6 @@ public class Building : MonoBehaviourPunCallbacks
         _player = player;
         _currentHP = hp;
         _isComplete = true;
-    }
-
-    public void Construct(float delta)
-    {
-        _elapseTime += delta;
-
-        if(_elapseTime >= _buildData.BuildTime)
-        {
-            _isComplete = true;
-        }
     }
 
     public void CompleteConstruction(Vector3 pos)
@@ -78,7 +81,7 @@ public class Building : MonoBehaviourPunCallbacks
         building.Init(buildData, player, _currentHP);
     }
 
-    public bool IsMyBuilding(Player player)
+    public bool IsPlayerBuilding(Player player)
     {
         return player == _player;
     }
@@ -109,5 +112,62 @@ public class Building : MonoBehaviourPunCallbacks
             _player.AddResources(_buildData.ResourceCosts);
             Destroy(gameObject);
         }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if(GameModManager.IsMultiplayer && !PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
+
+        _currentHP -= Mathf.Max(1, damage - _data.Defend);
+
+        if(GameModManager.IsMultiplayer)
+        {
+            photonView.RPC("RPCSyncHP", RpcTarget.All, _currentHP);
+        }
+
+        if(_currentHP <= 0)
+        {
+            _currentHP = 0;
+
+            if(GameModManager.IsMultiplayer)
+            {
+                photonView.RPC("RPCDestroyBuilding", RpcTarget.All);
+            }
+            else
+            {
+                DestroyBuilding();
+            }
+        }
+    }
+
+    [PunRPC]
+    public void RPCSyncHP(int hp)
+    {
+        _currentHP = hp;
+    }
+
+    public void DestroyBuilding()
+    {
+        _isDestroy = true;
+        Destroy(gameObject);
+    }
+
+    [PunRPC]
+    public void RPCDestroyBuilding()
+    {
+        _isDestroy = true;
+        PhotonNetwork.Destroy(gameObject);
+    }
+
+    public bool IsEnemy(Player player)
+    {
+        if(_player.TeamType != player.TeamType)
+        {
+            return true;
+        }
+        return false;
     }
 }

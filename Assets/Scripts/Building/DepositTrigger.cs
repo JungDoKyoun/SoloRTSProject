@@ -16,7 +16,7 @@ public class DepositTrigger : MonoBehaviour
     {
         if(other.TryGetComponent<UnitController>(out UnitController unit))
         {
-            if(_building.IsMyBuilding(unit.Player))
+            if(_building.IsPlayerBuilding(unit.Player))
             {
                 if(_building is IResourceDepot depot)
                 {

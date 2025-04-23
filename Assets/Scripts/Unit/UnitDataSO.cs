@@ -20,6 +20,7 @@ public class UnitDataSO : ScriptableObject
     public string Name;
     public int ID;
     public GameObject Prefab;
+    public int SupplyCost;
 
     [Header("½ºÅÝ")]
     public int MaxHp;

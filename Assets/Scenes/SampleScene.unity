@@ -133,8 +133,9 @@ GameObject:
   m_Component:
   - component: {fileID: 61192580}
   - component: {fileID: 61192579}
+  - component: {fileID: 61192581}
   m_Layer: 0
-  m_Name: UnitRegistry
+  m_Name: RegistryManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -167,6 +168,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &61192581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61192578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb8b8fe32575eb4cbd50cdd888ea832, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &61612154
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,6 +534,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 87734404}
   _button: {fileID: 168841955}
+  _data: {fileID: 0}
 --- !u!114 &168841955
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -667,18 +681,6 @@ MonoBehaviour:
   _groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  _unitLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  _buildingLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  _resources:
-    serializedVersion: 2
-    m_Bits: 512
-  _enemy:
-    serializedVersion: 2
-    m_Bits: 1024
   _commandPanelController: {fileID: 1513162034}
 --- !u!4 &285967411
 Transform:
@@ -2510,6 +2512,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 150198, guid: b4a1d0e6439682a4e958fb7c874ccb8c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1531429716}
+    - targetCorrespondingSourceObject: {fileID: 150198, guid: b4a1d0e6439682a4e958fb7c874ccb8c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1531429724}
   m_SourcePrefab: {fileID: 100100000, guid: b4a1d0e6439682a4e958fb7c874ccb8c, type: 3}
 --- !u!1 &451704625
 GameObject:
@@ -3883,6 +3888,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1917501641}
   _button: {fileID: 920004893}
+  _data: {fileID: 0}
 --- !u!114 &920004893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4131,6 +4137,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1878070034}
   _button: {fileID: 964592493}
+  _data: {fileID: 0}
 --- !u!114 &964592493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4267,6 +4274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1754591399}
   _button: {fileID: 1001658043}
+  _data: {fileID: 0}
 --- !u!114 &1001658043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5047,6 +5055,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1087477355}
   _button: {fileID: 1252045645}
+  _data: {fileID: 0}
 --- !u!114 &1252045645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5258,6 +5267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1243552104}
   _button: {fileID: 1300658121}
+  _data: {fileID: 0}
 --- !u!114 &1300658121
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5874,7 +5884,6 @@ MonoBehaviour:
   _attackIcon: {fileID: 21300000, guid: c064f39cafe9e65478c889ab3b90de67, type: 3}
   _buildIcon: {fileID: 21300000, guid: 7127ba48bd3553f408768b420dd27b3a, type: 3}
   _cancleIcon: {fileID: 21300000, guid: 321d8291ab2c6cb4b81d3dda37a91ef6, type: 3}
-  _buildPanelController: {fileID: 1675007829}
 --- !u!1 &1513399473
 GameObject:
   m_ObjectHideFlags: 0
@@ -6065,6 +6074,28 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1531429724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1531429714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 2
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1536724690 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 145858, guid: e93eced9cc2d545428e4a4b45713048d, type: 3}
@@ -6153,6 +6184,28 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1536724700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1536724690}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1541785154
 GameObject:
   m_ObjectHideFlags: 0
@@ -6282,6 +6335,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 758010015}
   _button: {fileID: 1619452804}
+  _data: {fileID: 0}
 --- !u!114 &1619452804
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6557,6 +6611,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 883397423}
   _button: {fileID: 1635721034}
+  _data: {fileID: 0}
 --- !u!1 &1642077078
 GameObject:
   m_ObjectHideFlags: 0
@@ -6824,6 +6879,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 740836136}
   _button: {fileID: 1675468557}
+  _data: {fileID: 0}
 --- !u!114 &1675468557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7305,6 +7361,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1009291606}
   _button: {fileID: 1801844670}
+  _data: {fileID: 0}
 --- !u!114 &1801844670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7669,6 +7726,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1727556076}
   _button: {fileID: 1861726346}
+  _data: {fileID: 0}
 --- !u!114 &1861726346
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7805,6 +7863,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _icon: {fileID: 1978762474}
   _button: {fileID: 1871490802}
+  _data: {fileID: 0}
 --- !u!114 &1871490802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9279,6 +9338,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 145858, guid: e93eced9cc2d545428e4a4b45713048d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1536724696}
+    - targetCorrespondingSourceObject: {fileID: 145858, guid: e93eced9cc2d545428e4a4b45713048d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1536724700}
   m_SourcePrefab: {fileID: 100100000, guid: e93eced9cc2d545428e4a4b45713048d, type: 3}
 --- !u!1 &1917501639
 GameObject:

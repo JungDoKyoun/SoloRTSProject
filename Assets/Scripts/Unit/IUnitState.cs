@@ -17,7 +17,6 @@ public class IdleState : IUnitState
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
-        _stateManager = unitController.UnitStateManager;
 
         Debug.Log("대기");
     }
@@ -39,7 +38,7 @@ public class IdleState : IUnitState
         //if (target != null)
         //{
         //    _unitController.SetTarget(target, true);
-        //    _stateManager.SetState(new ChaseState(), _unitController);
+        //    _unitController.RequestStateChange("ChaseState");
         //    return;
         //}
     }
@@ -48,14 +47,12 @@ public class IdleState : IUnitState
 public class MoveState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
         _destination = destination;
-        _stateManager = unitController.UnitStateManager;
 
         Debug.Log("이동");
         if (_destination != null)
@@ -80,7 +77,7 @@ public class MoveState : IUnitState
 
         if (_unitController.IsArrive())
         {
-            _unitController.UnitStateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
             return;
         }
     }
@@ -89,19 +86,18 @@ public class MoveState : IUnitState
 public class ChaseState : IUnitState
 {
     private UnitController _unitController;
-    private UnitController _target;
-    private UnitStateManager _stateManager;
+    private IAttackable _target;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
         _target = unitController.GetTarget();
-        _stateManager = unitController.UnitStateManager;
+
         Debug.Log("추격");
 
         if (_target != null)
         {
-            unitController.MoveTo(_target.transform.position);
+            unitController.MoveTo(_target.Position);
         }
     }
 
@@ -119,23 +115,23 @@ public class ChaseState : IUnitState
     {
         _unitController.RotateToTarget(_target);
 
-        if (_target.IsDie || _target == null)
+        if (_target.IsDestroyed || _target == null)
         {
             _unitController.ClearTarget();
-            _stateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
             return;
         }
 
-        float distance = Vector3.Distance(_unitController.transform.position, _target.transform.position);
+        float distance = Vector3.Distance(_unitController.transform.position, _target.Position);
 
         if (distance <= _unitController.UnitData.AttackRange)
         {
-            _stateManager.SetState(new AttackState(), _unitController);
+            _unitController.RequestStateChange("AttackState");
             return;
         }
         else
         {
-            _unitController.MoveTo(_target.transform.position);
+            _unitController.MoveTo(_target.Position);
             return;
         }
     }
@@ -144,14 +140,12 @@ public class ChaseState : IUnitState
 public class AttackState : IUnitState
 {
     private UnitController _unitController;
-    private UnitController _target;
-    private UnitStateManager _stateManager;
+    private IAttackable _target;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
         _target = unitController.GetTarget();
-        _stateManager = unitController.UnitStateManager;
     }
 
     public void Exit()
@@ -170,32 +164,23 @@ public class AttackState : IUnitState
 
         if (!_unitController.IsAttack)
         {
-            if (_target == null || _target.IsDie)
+            if (_target == null || _target.IsDestroyed)
             {
                 _unitController.ClearTarget();
-                _stateManager.SetState(new IdleState(), _unitController);
+                _unitController.RequestStateChange("IdleState");
                 return;
             }
 
-            float distance = Vector3.Distance(_unitController.transform.position, _target.transform.position);
+            float distance = Vector3.Distance(_unitController.transform.position, _target.Position);
 
             if (distance > _unitController.UnitData.AttackRange)
             {
-                if (_unitController.IsManualAttack)
-                {
-                    _stateManager.SetState(new ChaseState(), _unitController);
-                }
-                else
-                {
-                    _unitController.ClearTarget();
-                    _stateManager.SetState(new MoveAttackState(), _unitController, _unitController.GetMoveDestination());
-                }
+                _unitController.RequestStateChange("ChaseState");
                 return;
             }
 
             if (_unitController.CanAttack())
             {
-                Debug.Log("공격");
                 _unitController.Attack();
             }
         }
@@ -205,7 +190,6 @@ public class AttackState : IUnitState
 public class MoveAttackState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
@@ -213,7 +197,6 @@ public class MoveAttackState : IUnitState
         Debug.Log("어택 무브");
         _unitController = unitController;
         _destination = destination;
-        _stateManager = unitController.UnitStateManager;
 
         unitController.MoveTo(_destination);
     }
@@ -232,7 +215,7 @@ public class MoveAttackState : IUnitState
     {
         if (_unitController.IsArrive())
         {
-            _stateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
             return;
         }
 
@@ -245,7 +228,7 @@ public class MoveAttackState : IUnitState
             if (distance <= _unitController.UnitData.AttackRange)
             {
                 _unitController.SetTarget(target, false);
-                _stateManager.SetState(new AttackState(), _unitController);
+                _unitController.RequestStateChange("AttackState");
                 return;
             }
         }
@@ -255,14 +238,12 @@ public class MoveAttackState : IUnitState
 public class MoveToGatherState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Resource _resources;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
-        _stateManager = unitController.UnitStateManager;
         _resources = unitController.GetResources();
         _destination = destination;
 
@@ -295,14 +276,14 @@ public class MoveToGatherState : IUnitState
             }
             else if(res == null)
             {
-                _stateManager.SetState(new IdleState(), _unitController);
+                _unitController.RequestStateChange("IdleState");
                 return;
             }
         }
 
         if (Vector3.Distance(_unitController.transform.position, _destination) <= _unitController.UnitData.AttackRange)
         {
-            _stateManager.SetState(new GatherState(), _unitController);
+            _unitController.RequestStateChange("GatherState");
             return;
         }
     }
@@ -311,14 +292,12 @@ public class MoveToGatherState : IUnitState
 public class GatherState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Resource _resources;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
-        _stateManager = unitController.UnitStateManager;
         _resources = unitController.GetResources();
 
         unitController.StartGather();
@@ -345,30 +324,30 @@ public class GatherState : IUnitState
                 _resources = res;
                 _unitController.SetResources(_resources);
                 _destination = _resources.transform.position;
-                _stateManager.SetState(new MoveToGatherState(), _unitController, _destination);
+                _unitController.RequestStateChange("MoveToGatherState", _destination);
                 return;
             }
             else if (res == null && _unitController.IsReturnToBase(out _destination))
             {
-                _stateManager.SetState(new ReturnToBaseState(), _unitController, _destination);
+                _unitController.RequestStateChange("ReturnToBaseState", _destination);
                 return;
             }
             else
             {
-                _stateManager.SetState(new IdleState(), _unitController);
+                _unitController.RequestStateChange("IdleState");
                 return;
             }
         }
 
         if(_unitController.IsFull && _unitController.IsReturnToBase(out _destination))
         {
-            _stateManager.SetState(new ReturnToBaseState(), _unitController, _destination);
+            _unitController.RequestStateChange("ReturnToBaseState", _destination);
             return;
         }
 
         if (!_unitController.IsGather)
         {
-            _stateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
             return;
         }
     }
@@ -377,14 +356,12 @@ public class GatherState : IUnitState
 public class ReturnToBaseState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Resource _resources;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
-        _stateManager = unitController.UnitStateManager;
         _resources = unitController.GetResources();
         _destination = destination;
 
@@ -411,7 +388,9 @@ public class ReturnToBaseState : IUnitState
             {
                 if(_resources != null && _resources.RemainAmount > 0)
                 {
-                    _stateManager.SetState(new MoveToGatherState(), _unitController, _resources.transform.position);
+                    _destination = _resources.transform.position;
+                    _unitController.RequestStateChange("MoveToGatherState", _destination);
+                    return;
                 }
                 else
                 {
@@ -422,18 +401,20 @@ public class ReturnToBaseState : IUnitState
                         _resources = res;
                         _unitController.SetResources(_resources);
                         _destination = _resources.transform.position;
-                        _stateManager.SetState(new MoveToGatherState(), _unitController, _destination);
+                        _unitController.RequestStateChange("MoveToGatherState", _destination);
+                        return;
                     }
                     else
                     {
-                        _stateManager.SetState(new IdleState(), _unitController, _destination);
+                        _unitController.RequestStateChange("IdleState");
+                        return;
                     }
                 }
             }
         }
         else
         {
-            _stateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
         }
     }
 }
@@ -441,13 +422,11 @@ public class ReturnToBaseState : IUnitState
 public class MoveToBuildstate : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Vector3 _destination;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
-        _stateManager = unitController.UnitStateManager;
         _destination = destination;
 
         unitController.MoveTo(destination);
@@ -469,7 +448,7 @@ public class MoveToBuildstate : IUnitState
 
         if(distance <= _unitController.UnitData.BuildDistance)
         {
-            _stateManager.SetState(new BuildState(), _unitController, _destination);
+            _unitController.RequestStateChange("BuildState", _destination);
             return;
         }
     }
@@ -478,22 +457,22 @@ public class MoveToBuildstate : IUnitState
 public class BuildState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
     private Vector3 _destination;
     private Building _building;
     private BuildingBlueprintDataSO _data;
-    private Player _player;
+    private double _startTime;
+    private double _completeTime;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
         _unitController = unitController;
-        _stateManager = unitController.UnitStateManager;
         _destination = destination;
         _building = unitController.GetBuilding();
-        _data = unitController.GetBuildData();
-        _player = _building.Player;
+        _data = _building.GetBuildData();
 
         unitController.PlayAnime("Build", true);
+        _startTime = Utils.GetTime();
+        _completeTime = _startTime + _data.BuildTime;
     }
 
     public void Exit()
@@ -510,17 +489,18 @@ public class BuildState : IUnitState
     {
         if(_building == null)
         {
-            _stateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
             return;
         }
 
-        _building.Construct(Time.deltaTime);
+        double currentTime = Utils.GetTime();
 
-        if(_building.IsComplete)
+        if(currentTime >= _completeTime)
         {
+            _building.IsComplete = true;
             _building.CompleteConstruction(_destination);
-
-            _stateManager.SetState(new IdleState(), _unitController);
+            _unitController.RequestStateChange("IdleState");
+            return;
         }
     }
 }

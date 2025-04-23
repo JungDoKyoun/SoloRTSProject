@@ -5,12 +5,12 @@ using UnityEngine;
 
 public interface IAttackStrategy
 {
-    void ExecuteAttack(UnitController attacker, UnitController target);
+    void ExecuteAttack(UnitController attacker, IAttackable target);
 }
 
 public class MeleeAttack : IAttackStrategy
 {
-    public void ExecuteAttack(UnitController attacker, UnitController target)
+    public void ExecuteAttack(UnitController attacker, IAttackable target)
     {
         if(GameModManager.IsMultiplayer)
         {
@@ -19,12 +19,12 @@ public class MeleeAttack : IAttackStrategy
                 return;
             }
 
-            if (target == null || !target.TryGetComponent<PhotonView>(out var view))
+            if (target == null || !((MonoBehaviour)target).TryGetComponent<PhotonView>(out var view))
             {
                 return;
             }
 
-            target.photonView.RPC("RPCTakeDamage", RpcTarget.MasterClient, attacker.UnitData.Damage);
+            target.TakeDamage(attacker.UnitData.Damage);
         }
         else
         {
@@ -35,7 +35,7 @@ public class MeleeAttack : IAttackStrategy
 
 public class RangedAttack : IAttackStrategy
 {
-    public void ExecuteAttack(UnitController attacker, UnitController target)
+    public void ExecuteAttack(UnitController attacker, IAttackable target)
     {
         if(GameModManager.IsMultiplayer)
         {
@@ -44,7 +44,7 @@ public class RangedAttack : IAttackStrategy
                 return;
             }
 
-            if (target == null || !target.TryGetComponent<PhotonView>(out var view))
+            if (target == null || !((MonoBehaviour)target).TryGetComponent<PhotonView>(out var view))
             {
                 return;
             }

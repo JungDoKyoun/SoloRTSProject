@@ -16,17 +16,18 @@ MonoBehaviour:
   ID: 2
   Prefab: {fileID: 145858, guid: e93eced9cc2d545428e4a4b45713048d, type: 3}
   MaxHp: 50
+  Damage: 3
+  Defend: 10
   AttackRange: 10
   DetectRange: 10
   MoveSpeed: 4
-  Damage: 0
-  Defend: 10
   AttackCoolTime: 3
   UnitType: 0
   AttackType: 1
   ProjectileData: {fileID: 11400000, guid: e9a84ba5a7d99cc42ac87649d89bf58a, type: 2}
-  CanGather: 0
   MaxCarryAmount: 0
   GatherAmountPerTick: 0
   GatherTickInterval: 0
   GatherSearchRadius: 0
+  BuildDistance: 0
+  BuildingBlueprintDatas: []

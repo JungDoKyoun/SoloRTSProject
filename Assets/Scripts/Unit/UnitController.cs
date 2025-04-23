@@ -8,14 +8,14 @@ public enum TeamType
     Ally, Enemy
 }
 
-public class UnitController : MonoBehaviourPunCallbacks
+public class UnitController : MonoBehaviourPunCallbacks, IAttackable
 {
     [Header("공용")]
     private NavMeshAgent _agent;
     private Renderer _renderer;
     private UnitDataSO _unitData;
     private UnitStateManager _unitStateManager;
-    private UnitController _target; //유닛이 타겟으로 지정할 목표
+    private IAttackable _target; //유닛이 타겟으로 지정할 목표
     private Animator _anime;
     private Player _player;
     private UnitType _unitType;
@@ -56,14 +56,12 @@ public class UnitController : MonoBehaviourPunCallbacks
     public float CurrentHP { get { return _currentHP; } set { _currentHP = value; } }
     public int CurrentCarryAmount { get { return _currentCarryAmount; } set { _currentCarryAmount = value; } }
     public bool IsSelect { get { return _isSelect; } set { _isSelect = value; } }
-    public bool IsDie { get { return _isDie; } set { _isDie = value; } }
     public bool IsManualAttack { get { return _isManualAttack; } set { _isManualAttack = value; } }
     public bool IsAttack { get { return _isAttack; } set { _isAttack = value; } }
     public bool IsGather { get { return _isGather; } set { _isGather = value; } }
     public bool IsFull { get { return _isFull; } set { _isFull = value; } }
-
-    //Player만들고 오류 해결하면 지워라
-    //public bool IsPlayerUnit;
+    public bool IsDestroyed { get { return _isDie; } set { _isDie = value; } }
+    public Vector3 Position => transform.position;
 
     private void Start()
     {
@@ -80,13 +78,12 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void OnHit()
     {
-        if (_target == null || _target.IsDie)
+        if (_target == null || _target.IsDestroyed)
         {
             return;
         }
 
         _attackStrategy.ExecuteAttack(this, _target);
-        Debug.Log(_attackStrategy);
     }
 
     public void Init(UnitManager unitManager)
@@ -141,47 +138,51 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void PlayAnime(string animeName)
     {
-        if (GameModManager.IsMultiplayer)
-        {
-            photonView.RPC("RPCTriggerAnime", RpcTarget.All, animeName);
-        }
-
-        else
-        {
-            _anime.SetTrigger(animeName);
-        }
-    }
-
-    [PunRPC]
-    private void RPCTriggerAnime(string animeName)
-    {
         _anime.SetTrigger(animeName);
+
+        //if (GameModManager.IsMultiplayer)
+        //{
+        //    photonView.RPC("RPCTriggerAnime", RpcTarget.All, animeName);
+        //}
+
+        //else
+        //{
+        //    _anime.SetTrigger(animeName);
+        //}
     }
+
+    //[PunRPC]
+    //private void RPCTriggerAnime(string animeName)
+    //{
+    //    _anime.SetTrigger(animeName);
+    //}
 
     public void PlayAnime(string animeName, bool TorF)
     {
-        if (GameModManager.IsMultiplayer)
-        {
-            photonView.RPC("RPCBoolAnime", RpcTarget.All, animeName, TorF);
-        }
-
-        else
-        {
-            _anime.SetBool(animeName, TorF);
-        }
-    }
-
-    [PunRPC]
-    private void RPCBoolAnime(string animeName, bool TorF)
-    {
         _anime.SetBool(animeName, TorF);
+
+        //if (GameModManager.IsMultiplayer)
+        //{
+        //    photonView.RPC("RPCBoolAnime", RpcTarget.All, animeName, TorF);
+        //}
+
+        //else
+        //{
+        //    _anime.SetBool(animeName, TorF);
+        //}
     }
+
+    //[PunRPC]
+    //private void RPCBoolAnime(string animeName, bool TorF)
+    //{
+    //    _anime.SetBool(animeName, TorF);
+    //}
 
     public void MoveTo(Vector3 destination)
     {
+        SetMoveDestination(destination);
         _agent.isStopped = false;
         _agent.SetDestination(destination);
-        SetMoveDestination(destination);
         PlayAnime("Walk", true);
     }
 
@@ -203,11 +204,11 @@ public class UnitController : MonoBehaviourPunCallbacks
         }
     }
 
-    public void RotateToTarget(UnitController target)
+    public void RotateToTarget(IAttackable target)
     {
         if (target != null)
         {
-            Vector3 dir = target.transform.position - transform.position;
+            Vector3 dir = target.Position - transform.position;
 
             dir.y = 0;
 
@@ -236,7 +237,7 @@ public class UnitController : MonoBehaviourPunCallbacks
         return _moveDestination;
     }
 
-    public void SetTarget(UnitController target, bool isManualAttack)
+    public void SetTarget(IAttackable target, bool isManualAttack)
     {
         _target = target;
         _isManualAttack = isManualAttack;
@@ -248,7 +249,7 @@ public class UnitController : MonoBehaviourPunCallbacks
         _isManualAttack = false;
     }
 
-    public UnitController GetTarget()
+    public IAttackable GetTarget()
     {
         return _target;
     }
@@ -262,9 +263,27 @@ public class UnitController : MonoBehaviourPunCallbacks
         return false;
     }
 
+    public bool IsEnemy(Building building)
+    {
+        if(_player.TeamType != building.Player.TeamType)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public bool IsAlly(UnitController other)
     {
         if(_player.TeamType == other.Player.TeamType)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsAlly(Building building)
+    {
+        if(_player.TeamType == building.Player.TeamType)
         {
             return true;
         }
@@ -285,7 +304,7 @@ public class UnitController : MonoBehaviourPunCallbacks
 
             float distance = Vector3.Distance(transform.position, other.transform.position);
 
-            if (distance <= minDist && !other.IsDie)
+            if (distance <= minDist && !other.IsDestroyed)
             {
                 minDist = distance;
                 target = other;
@@ -320,46 +339,57 @@ public class UnitController : MonoBehaviourPunCallbacks
 
     public void TakeDamage(int damage)
     {
-        _currentHP -= Mathf.Max(1, damage - _unitData.Defend);
-        if (GameModManager.IsMultiplayer)
-        {
-            if (!PhotonNetwork.IsMasterClient)
-            {
-                return;
-            }
-
-            photonView.RPC("SynceHP", RpcTarget.All, _currentHP);
-        }
-
-        if (_currentHP <= 0)
-        {
-            Die();
-
-            if (GameModManager.IsMultiplayer)
-            {
-                if (!PhotonNetwork.IsMasterClient)
-                {
-                    return;
-                }
-
-                photonView.RPC("SynceDie", RpcTarget.All);
-            }
-        }
-    }
-
-    [PunRPC]
-    public void RPCTakeDamage(int damage)
-    {
-        if (_isDie)
+        
+        if (GameModManager.IsMultiplayer && !PhotonNetwork.IsMasterClient)
         {
             return;
         }
 
-        TakeDamage(damage);
+        _currentHP -= Mathf.Max(1, damage - _unitData.Defend);
+        Debug.Log(_currentHP);
+
+        if (GameModManager.IsMultiplayer)
+        {
+            photonView.RPC("RPCSyncHP", RpcTarget.All, _currentHP);
+        }
+
+        if (_currentHP <= 0)
+        {
+            _currentHP = 0;
+            _player.DecreaseCurrentSupply(_unitData.SupplyCost);
+
+            if (GameModManager.IsMultiplayer)
+            {
+                photonView.RPC("RPCSyncDie", RpcTarget.All);
+            }
+            else
+            {
+                Die();
+            }
+        }
     }
 
+    //[PunRPC]
+    //public void RPCTakeDamage(int damage)
+    //{
+    //    if (_isDie || !PhotonNetwork.IsMasterClient)
+    //    {
+    //        return;
+    //    }
+
+    //    _currentHP -= Mathf.Max(1, damage - _unitData.Defend);
+
+    //    photonView.RPC("SynceHP", RpcTarget.All, _currentHP);
+
+    //    if (_currentHP <= 0)
+    //    {
+    //        _currentHP = 0;
+    //        photonView.RPC("SynceDie", RpcTarget.All);
+    //    }
+    //}
+
     [PunRPC]
-    private void SynceHP(float HP)
+    private void RPCSyncHP(float HP)
     {
         _currentHP = HP;
     }
@@ -370,7 +400,7 @@ public class UnitController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void SynceDie()
+    private void RPCSyncDie()
     {
         _isDie = true;
     }
@@ -507,10 +537,10 @@ public class UnitController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    public void RPCRequestResumeBuild(int buildingViewID, int workerViewID)
+    public void RPCRequestResumeBuild(int buildingName, int unitID)
     {
-        var buildingPhotonView = PhotonView.Find(buildingViewID);
-        var workerPhotonView = PhotonView.Find(workerViewID);
+        var buildingPhotonView = PhotonView.Find(buildingName);
+        var workerPhotonView = PhotonView.Find(unitID);
 
         if (buildingPhotonView == null || workerPhotonView == null)
         {
@@ -520,7 +550,7 @@ public class UnitController : MonoBehaviourPunCallbacks
         var building = buildingPhotonView.GetComponent<Building>();
         var worker = workerPhotonView.GetComponent<UnitController>();
 
-        if (!building.IsMyBuilding(worker.Player))
+        if (!building.IsPlayerBuilding(worker.Player))
         {
             return;
         };
@@ -532,6 +562,39 @@ public class UnitController : MonoBehaviourPunCallbacks
         var buildingData = building.GetBuildData();
 
         new BuildCommand(worker, buildPos, building, buildingData).Execute() ;
+    }
+
+    public void RequestStateChange(string stateName, Vector3 destination = new Vector3())
+    {
+        if(GameModManager.IsMultiplayer)
+        {
+            photonView.RPC("RPCRequestStateChange", RpcTarget.MasterClient, stateName, destination, photonView.ViewID);
+        }
+
+        else
+        {
+            UnitStateManager.SetState(Utils.GetStateByName(stateName), this, destination);
+        }
+    }
+
+    [PunRPC]
+    public void RPCRequestStateChange(string stateName, Vector3 destination, int unitID)
+    {
+        var PhtonViewunit = PhotonView.Find(unitID);
+        UnitController unit = PhtonViewunit.GetComponent<UnitController>();
+
+        unit.UnitStateManager.SetState(Utils.GetStateByName(stateName), unit, destination);
+
+        photonView.RPC("RPCBroadcastStateChange", RpcTarget.Others, stateName, destination, unitID);
+    }
+
+    [PunRPC]
+    public void RPCBroadcastStateChange(string stateName, Vector3 destination, int unitID)
+    {
+        var PhtonViewunit = PhotonView.Find(unitID);
+        UnitController unit = PhtonViewunit.GetComponent<UnitController>();
+
+        unit.UnitStateManager.SetState(Utils.GetStateByName(stateName), unit, destination);
     }
 
     private IEnumerator AttackCo()
@@ -574,5 +637,10 @@ public class UnitController : MonoBehaviourPunCallbacks
                 yield break;
             }
         }
+    }
+
+    public bool IsEnemy(Player player)
+    {
+        throw new System.NotImplementedException();
     }
 }
