@@ -19,7 +19,6 @@ public class UnitManager : MonoBehaviour
         NavMeshAgent = GetComponent<NavMeshAgent>();
         Renderer = GetComponent<Renderer>();
         Anime = GetComponent<Animator>();
-        UnitController.Init(this);
     }
 
     public UnitDataSO UnitDataSO { get { return _unitDataSo; } }

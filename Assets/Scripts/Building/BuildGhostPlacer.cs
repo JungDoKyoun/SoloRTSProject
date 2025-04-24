@@ -162,7 +162,7 @@ public class BuildGhostPlacer : MonoBehaviour
                 else
                 {
                     _building = _ghost.GetComponent<Building>();
-                    _building.Init(_data, _player);
+                    _building.Init(_data, _player.PlayerID);
                     MeshCollider collider = _building.gameObject.AddComponent<MeshCollider>();
                     StartBuild(hit.point);
                     _ghost = null;

@@ -20,6 +20,7 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     private Player _player;
     private UnitType _unitType;
     private Vector3 _moveDestination;
+    private string _unitInstanceID;
     private int _maxHP;
     private float _currentHP;
     private bool _isSelect = false;
@@ -47,12 +48,13 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     private bool _isFull = false;
     private Coroutine _gatherCoroutine;
 
-    public Transform FirePoin { get { return _firePoin; } }
-    public UnitDataSO UnitData { get { return _unitData; } }
-    public UnitStateManager UnitStateManager { get { return _unitStateManager; } }
-    public Player Player { get { return _player; } }
-    public UnitType UnitType { get { return _unitType; } }
-    public ResourcesType CurrentResourceType { get { return _currentResourceType; } }
+    public Transform FirePoin => _firePoin;
+    public UnitDataSO UnitData => _unitData;
+    public UnitStateManager UnitStateManager => _unitStateManager;
+    public Player Player => _player;
+    public UnitType UnitType => _unitType;
+    public ResourcesType CurrentResourceType => _currentResourceType;
+    public string UnitInstanceID => _unitInstanceID;
     public float CurrentHP { get { return _currentHP; } set { _currentHP = value; } }
     public int CurrentCarryAmount { get { return _currentCarryAmount; } set { _currentCarryAmount = value; } }
     public bool IsSelect { get { return _isSelect; } set { _isSelect = value; } }
@@ -86,13 +88,14 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         _attackStrategy.ExecuteAttack(this, _target);
     }
 
-    public void Init(UnitManager unitManager)
+    public void Init(UnitManager unitManager, int playerID, string unitInstanceID = null)
     {
         _agent = unitManager.NavMeshAgent;
         _renderer = unitManager.Renderer;
         _unitStateManager = unitManager.UnitStateManager;
         _anime = unitManager.Anime;
         _unitData = unitManager.UnitDataSO;
+        _player = PlayerManager.Instance.GetPlayer(playerID);
 
         _unitStateManager.SetState(new IdleState(), this);
         SetAttackType();
@@ -107,11 +110,18 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         _gatherAmountPerTick = _unitData.GatherAmountPerTick;
         _gatherTickInterval = _unitData.GatherTickInterval;
         _currentHP = _maxHP;
+        _unitInstanceID =  unitInstanceID;
     }
 
-    public void SetPlayer(Player player)
+    public void InitPlayer(int playerID)
     {
-        _player = player;
+        _player = PlayerManager.Instance.GetPlayer(playerID);
+    }
+
+    [PunRPC]
+    public void RPCInitPlayer(int playerID)
+    {
+        InitPlayer(playerID);
     }
 
     public bool IsPlayerUnit(Player player)
@@ -252,6 +262,15 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public IAttackable GetTarget()
     {
         return _target;
+    }
+
+    public bool IsEnemy(Player player)
+    {
+        if (_player.TeamType != player.TeamType)
+        {
+            return true;
+        }
+        return false;
     }
 
     public bool IsEnemy(UnitController other)
@@ -507,21 +526,17 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     {
         var buildData = Resources.Load<BuildingBlueprintDataSO>("BuildingGhostData/" + buildDataName);
         var player = PlayerManager.Instance.GetPlayer(playerID);
-
-        if(buildData == null || player == null)
-        {
-            return;
-        }
-
         var unit = PhotonView.Find(unitID);
-        if(unit == null)
+
+        if (buildData == null || player == null || unit == null)
         {
             return;
         }
+
         player.UseResources(buildData.ResourceCosts);
         var buildGhostObj = PhotonNetwork.Instantiate(buildData.PreviewName, pos, Quaternion.identity);
         var building = buildGhostObj.GetComponent<Building>();
-        building.Init(buildData, player);
+        building.Init(buildData, player.PlayerID);
         var collider = buildGhostObj.AddComponent<MeshCollider>();
 
         if (!PhotonNetwork.IsMasterClient)
@@ -637,10 +652,5 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
                 yield break;
             }
         }
-    }
-
-    public bool IsEnemy(Player player)
-    {
-        throw new System.NotImplementedException();
     }
 }

@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,16 +36,24 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     }
     public Player LocalPlayer { get { return _localPlayer; } }
 
-    public void PlayerRegistry(Player player, bool isLocal = false)
+    public void PlayerRegistry(int playerID, string nickName, TeamType team, RaceType raceType ,bool isAI)
     {
-        if(!_players.ContainsKey(player.PlayerID))
+        if(!_players.ContainsKey(playerID))
         {
-            _players.Add(player.PlayerID, player);
-        }
+            Player newplayer = new Player(playerID, nickName, team, raceType ,isAI);
+            _players.Add(playerID, newplayer);
 
-        if(isLocal)
-        {
-            _localPlayer = player;
+            if(GameModManager.IsMultiplayer)
+            {
+                if (playerID == PhotonNetwork.LocalPlayer.ActorNumber)
+                {
+                    _localPlayer = newplayer;
+                }
+            }
+            else
+            {
+                _localPlayer = newplayer;
+            }
         }
     }
 
@@ -58,7 +67,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
     public Player GetPlayer(int id)
     {
-        if(_players.TryGetValue(id, out Player player))
+        if(_players.TryGetValue(id, out var player))
         {
             return player;
         }

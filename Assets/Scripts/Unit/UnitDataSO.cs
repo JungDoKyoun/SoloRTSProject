@@ -21,6 +21,7 @@ public class UnitDataSO : ScriptableObject
     public int ID;
     public GameObject Prefab;
     public int SupplyCost;
+    public float ProductionTime;
 
     [Header("½ºÅÝ")]
     public int MaxHp;
@@ -37,11 +38,13 @@ public class UnitDataSO : ScriptableObject
     public ProjectileDataSO ProjectileData;
 
     [Header("ÀÏ²Û °ü·Ã")]
-    //public bool Gather;
     public int MaxCarryAmount;
     public int GatherAmountPerTick;
     public float GatherTickInterval;
     public float GatherSearchRadius;
     public float BuildDistance;
     public List<BuildingBlueprintDataSO> BuildingBlueprintDatas;
+
+    [Header("»ý»ê ºñ¿ë")]
+    public List<ResourceCost> Costs;
 }

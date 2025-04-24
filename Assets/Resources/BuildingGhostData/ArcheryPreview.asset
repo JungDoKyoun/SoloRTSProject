@@ -19,7 +19,8 @@ MonoBehaviour:
   BuildingName: Archery
   BuildTime: 10
   Icon: {fileID: 21300000, guid: 7127ba48bd3553f408768b420dd27b3a, type: 3}
-  MaxHP: 100
+  MaxHP: 1000
+  Defend: 0
   buildingData: {fileID: 11400000, guid: 13749285f5fc90d48890077134684e13, type: 2}
   ResourceCosts:
   - ResourcesType: 0

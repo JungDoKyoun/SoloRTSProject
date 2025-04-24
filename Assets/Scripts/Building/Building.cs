@@ -31,22 +31,28 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
         BuildingRegistry.Instance.UnRegister(this);
     }
 
-    public void Init(BuildingBlueprintDataSO data, Player player)
+    public void Init(BuildingBlueprintDataSO data, int playerID)
     {
         _buildData = data;
         _data = data.buildingData;
-        _player = player;
+        _player = PlayerManager.Instance.GetPlayer(playerID);
         _currentHP = _data.MaxHP;
         _isComplete = false;
     }
 
-    public void Init(BuildingBlueprintDataSO data, Player player, int hp)
+    public void Init(BuildingBlueprintDataSO data, int playerID, int hp)
     {
         _buildData = data;
         _data = data.buildingData;
-        _player = player;
+        _player = PlayerManager.Instance.GetPlayer(playerID);
         _currentHP = hp;
         _isComplete = true;
+    }
+
+    [PunRPC]
+    public void RPCInitPlayer(int playerID)
+    {
+        _player = PlayerManager.Instance.GetPlayer(playerID);
     }
 
     public void CompleteConstruction(Vector3 pos)
@@ -60,7 +66,13 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
         {
             var buildObj = Instantiate(_buildData.BuildingPrefab, pos, _buildData.BuildingPrefab.transform.rotation);
             var building = buildObj.GetComponent<Building>();
-            building.Init(_buildData ,_player, _currentHP);
+            building.Init(_buildData ,_player.PlayerID, _currentHP);
+
+            if(_data.SupplyProvided > 0)
+            {
+
+            }
+
             Destroy(gameObject);
         }
     }
@@ -78,7 +90,7 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
 
         var buildObj = PhotonNetwork.Instantiate(buildData.BuildingName, pos, buildData.BuildingPrefab.transform.rotation);
         var building = buildObj.GetComponent<Building>();
-        building.Init(buildData, player, _currentHP);
+        building.Init(buildData, player.PlayerID, _currentHP);
     }
 
     public bool IsPlayerBuilding(Player player)
