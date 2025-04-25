@@ -36,6 +36,14 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     }
     public Player LocalPlayer { get { return _localPlayer; } }
 
+    public void InitializePlayersFromSlots(List<SlotData> slots)
+    {
+        foreach(var slot in slots)
+        {
+            PlayerRegistry(slot.PlayerID, slot.NickName, slot.TeamType, slot.RaceType, slot.IsAI);
+        }
+    }
+
     public void PlayerRegistry(int playerID, string nickName, TeamType team, RaceType raceType ,bool isAI)
     {
         if(!_players.ContainsKey(playerID))

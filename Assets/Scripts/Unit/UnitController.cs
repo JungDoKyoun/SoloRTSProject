@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public enum TeamType
 {
-    Ally, Enemy
+    Team1, Team2
 }
 
 public class UnitController : MonoBehaviourPunCallbacks, IAttackable
