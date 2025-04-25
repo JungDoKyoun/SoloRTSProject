@@ -19,7 +19,7 @@ public class CommandPanelController : MonoBehaviour
     public void ShowUnitUI(UnitController unit)
     {
         ClearAll();
-
+        Debug.Log((unit.IsWorker()));
         if(unit == null)
         {
             return;
@@ -27,6 +27,7 @@ public class CommandPanelController : MonoBehaviour
 
         if (unit.IsWorker())
         {
+            Debug.Log("bb");
             _buttons[8].SetCommandButton(_buildIcon, () => ShowBuildUI(unit));
         }
 

@@ -96,4 +96,14 @@ public static class Utils
                 return new IdleState();
         }
     }
+
+    public static Vector3 GetBuildSize(GameObject obj)
+    {
+        Collider collider = obj.GetComponent<Collider>();
+        if (collider != null)
+        {
+            return collider.bounds.size;
+        }
+        return new Vector3(2f, 2f, 2f);
+    }
 }

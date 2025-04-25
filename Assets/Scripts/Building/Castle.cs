@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class Castle : Building, IResourceDepot
+public class Castle : ProductionBuilding, IResourceDepot
 {
     public void ReceiveResource(ResourcesType type, int amount, Player player)
     {

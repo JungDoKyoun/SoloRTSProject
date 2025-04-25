@@ -73,6 +73,13 @@ public class BuildGhostPlacer : MonoBehaviour
 
     public bool IsValidPosition(Vector3 pos)
     {
+        if(_ghost == null)
+        {
+            return false;
+        }
+
+        _building = _ghost.GetComponent<Building>();
+        var buildSize = Utils.GetBuildSize(_ghost);
         Vector3 half = _data.BuildSize * 0.5f;
 
         if(Physics.OverlapBox(pos, half, Quaternion.identity, LayerMask.GetMask("Unit", "Building", "Resources")).Length > 0)
@@ -161,9 +168,19 @@ public class BuildGhostPlacer : MonoBehaviour
                 }
                 else
                 {
-                    _building = _ghost.GetComponent<Building>();
+                    if(_building == null)
+                    {
+                        _building = _ghost.GetComponent<Building>();
+                    }
+                    
                     _building.Init(_data, _player.PlayerID);
-                    MeshCollider collider = _building.gameObject.AddComponent<MeshCollider>();
+                    MeshRenderer meshRenderer = _building.GetComponent<MeshRenderer>();
+                    if(meshRenderer != null)
+                    {
+                        BoxCollider boxCollider = _building.AddComponent<BoxCollider>();
+                        boxCollider.center = meshRenderer.bounds.center - _building.transform.position;
+                        boxCollider.size = meshRenderer.bounds.size;
+                    }
                     StartBuild(hit.point);
                     _ghost = null;
                 }

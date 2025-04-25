@@ -67,8 +67,15 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
             var buildObj = Instantiate(_buildData.BuildingPrefab, pos, _buildData.BuildingPrefab.transform.rotation);
             var building = buildObj.GetComponent<Building>();
             building.Init(_buildData ,_player.PlayerID, _currentHP);
+            MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
+                boxCollider.center = meshRenderer.bounds.center - gameObject.transform.position;
+                boxCollider.size = meshRenderer.bounds.size;
+            }
 
-            if(_data.SupplyProvided > 0)
+            if (_data.SupplyProvided > 0)
             {
 
             }

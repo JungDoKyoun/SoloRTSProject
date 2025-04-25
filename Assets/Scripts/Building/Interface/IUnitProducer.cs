@@ -4,5 +4,6 @@ using UnityEngine;
 
 public interface IUnitProducer
 {
-    void ProduceUnit();
+    void ProduceUnit(UnitDataSO unitData);
+    void CancelProduction(int queueIndex);
 }

@@ -90,7 +90,7 @@ public class UnitSelectionHandler : MonoBehaviour
                 var targetBuilding = hit.collider.GetComponent<Building>();
                 var targetResource = hit.collider.GetComponent<Resource>();
 
-                if (_isAttackMove && targetUnit != null && _selectedUnit[0].IsEnemy(targetUnit) && _selectedUnit.Count > 0)
+                if (_isAttackMove && _selectedUnit.Count > 0 && targetUnit != null && _selectedUnit[0].IsEnemy(targetUnit))
                 {
                     foreach (var unit in _selectedUnit)
                     {
@@ -103,7 +103,7 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
-                if(_isAttackMove && targetBuilding != null && _selectedUnit.Count > 0 && _selectedUnit[0].IsEnemy(targetBuilding))
+                if(_isAttackMove && _selectedUnit.Count > 0  &&targetBuilding != null && _selectedUnit[0].IsEnemy(targetBuilding))
                 {
                     foreach(var unit in _selectedUnit)
                     {

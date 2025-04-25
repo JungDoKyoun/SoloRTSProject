@@ -24,6 +24,18 @@ public class UnitPoolManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public static UnitPoolManager Instance
+    {
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = FindObjectOfType<UnitPoolManager>();
+            }
+            return _instance;
+        }
+    }
+
     private void LoadAllUnitData()
     {
         foreach(RaceType race in System.Enum.GetValues(typeof(RaceType)))
@@ -61,7 +73,7 @@ public class UnitPoolManager : MonoBehaviourPunCallbacks
         return pool;
     }
 
-    public UnitController GetUnit(RaceType race, UnitDataSO unitData, int playerID, Vector3 pos, string unitInstanceID)
+    public UnitController GetUnit(RaceType race, UnitDataSO unitData, int playerID, Vector3 pos, string unitInstanceID = null)
     {
         var pool = CreatePool(race, unitData);
         var unit = pool.Get();
