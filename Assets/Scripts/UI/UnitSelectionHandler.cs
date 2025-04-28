@@ -293,18 +293,21 @@ public class UnitSelectionHandler : MonoBehaviour
     private void SelectBuilding(Building building)
     {
         DeselectAll();
-
+        Debug.Log("asd1111");
         _selectedBuilding = building;
         building.IsSelected = true;
 
         if(building.IsPlayerBuilding(_player))
         {
+            Debug.Log("asd");
             if (building.IsComplete)
             {
+                Debug.Log("14124124");
                 _commandPanelController.ShowCompleteBuildingUI(building);
             }
             else if (!building.IsComplete)
             {
+                Debug.Log("1");
                 _commandPanelController.ShowIncompleteBuildingUI(building);
             }
         }

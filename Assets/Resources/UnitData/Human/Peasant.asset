@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Peasant
   ID: 0
-  Prefab: {fileID: 0}
+  Prefab: {fileID: 155500, guid: 4c377d3880e82d2429398598d40b2f96, type: 3}
+  SupplyCost: 0
+  ProductionTime: 0
+  UnitIcon: {fileID: 0}
   MaxHp: 100
   Damage: 0
   Defend: 0
@@ -32,3 +35,4 @@ MonoBehaviour:
   BuildDistance: 5
   BuildingBlueprintDatas:
   - {fileID: 11400000, guid: 1a2b11207db85d343bd964f79658dea2, type: 2}
+  Costs: []

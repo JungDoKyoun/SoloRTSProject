@@ -5,7 +5,7 @@ using UnityEngine;
 
 public enum RaceType
 {
-    Human
+    Human,asdasf
 }
 
 public class Player

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b4148054bf61a24c8591c2bf883d29a, type: 3}
+  m_Name: CastlePreview
+  m_EditorClassIdentifier: 
+  Name: CastlePreview
+  PreviewPrefab: {fileID: 591613308250063807, guid: 0b2de1e8f6374cb47b9aa371639e7c88, type: 3}
+  PreviewName: CastlePreview
+  BuildingPrefab: {fileID: 4123018823213194525, guid: 55d0a53ffd2ac654e9cec4db147c8a8e, type: 3}
+  BuildingName: Castle
+  BuildTime: 30
+  Icon: {fileID: -3454419488990572037, guid: f02467aee785ccf49a986c09192b2bee, type: 3}
+  MaxHP: 1500
+  Defend: 0
+  buildingData: {fileID: 11400000, guid: 678e1ebaaec701c47a26c8342c208d18, type: 2}
+  ResourceCosts:
+  - ResourcesType: 0
+    Amount: 0
+  - ResourcesType: 1
+    Amount: 0
+  BuildSize: {x: 0, y: 0, z: 0}

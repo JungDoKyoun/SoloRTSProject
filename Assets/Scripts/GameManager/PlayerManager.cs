@@ -82,6 +82,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         return null;
     }
 
+    public Player GetLocalPlayer()
+    {
+        return _localPlayer;
+    }
+
     public List<Player> GetAllPlayer()
     {
         return new List<Player>(_players.Values);
@@ -116,5 +121,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         {
             player.SetSupply(maxSupply, currentSupply);
         }
+    }
+
+    public void SetLocalPlayerSlot(PlayerSlot slot)
+    {
+        var data = slot.GetSlotData();
+        _localPlayer = new Player(data.PlayerID, data.NickName, data.TeamType, data.RaceType, data.IsAI);
     }
 }

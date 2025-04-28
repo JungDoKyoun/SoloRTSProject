@@ -22,6 +22,7 @@ public class UnitDataSO : ScriptableObject
     public GameObject Prefab;
     public int SupplyCost;
     public float ProductionTime;
+    public Sprite UnitIcon;
 
     [Header("½ºÅÝ")]
     public int MaxHp;

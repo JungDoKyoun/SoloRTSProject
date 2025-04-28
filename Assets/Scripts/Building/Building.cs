@@ -75,12 +75,12 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
                 boxCollider.size = meshRenderer.bounds.size;
             }
 
-            if (_data.SupplyProvided > 0)
-            {
-
-            }
-
             Destroy(gameObject);
+        }
+
+        if (_data.SupplyProvided > 0)
+        {
+            _player.IncreaseMaxSupply(_data.SupplyProvided);
         }
     }
 
@@ -98,6 +98,13 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
         var buildObj = PhotonNetwork.Instantiate(buildData.BuildingName, pos, buildData.BuildingPrefab.transform.rotation);
         var building = buildObj.GetComponent<Building>();
         building.Init(buildData, player.PlayerID, _currentHP);
+        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        if (meshRenderer != null)
+        {
+            BoxCollider boxCollider = gameObject.AddComponent<BoxCollider>();
+            boxCollider.center = meshRenderer.bounds.center - gameObject.transform.position;
+            boxCollider.size = meshRenderer.bounds.size;
+        }
     }
 
     public bool IsPlayerBuilding(Player player)
@@ -158,6 +165,11 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
             else
             {
                 DestroyBuilding();
+            }
+
+            if (_data.SupplyProvided > 0)
+            {
+                _player.DecreaseMaxSupply(_data.SupplyProvided);
             }
         }
     }

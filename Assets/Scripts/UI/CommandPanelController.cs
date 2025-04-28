@@ -89,5 +89,38 @@ public class CommandPanelController : MonoBehaviour
     public void ShowCompleteBuildingUI(Building building)
     {
         ClearAll();
+
+        if(building is IUnitProducer)
+        {
+            ShowProductionUI(building);
+        }
+    }
+
+    public void ShowProductionUI(Building building)
+    {
+        ClearAll();
+
+        if(building == null)
+        {
+            return;
+        }
+
+        var unitProductionList = building.GetBuildingData().TrainableUnits;
+
+        for(int i = 0; i < _buttons.Length; i++)
+        {
+            if(i < unitProductionList.Count)
+            {
+                int index = i;
+                var data = unitProductionList[index];
+                _buttons[i].SetCommandButton(data.UnitIcon, () =>
+                {
+                    if(building is IUnitProducer producer)
+                    {
+                        producer.ProduceUnit(data);
+                    }
+                });
+            }
+        }
     }
 }
