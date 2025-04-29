@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Crossbowman
   ID: 2
-  Prefab: {fileID: 145858, guid: e93eced9cc2d545428e4a4b45713048d, type: 3}
+  Prefab: {fileID: 7876148479091323196, guid: 7555bdd65543a1f4686d38015b38a9a5, type: 3}
+  SupplyCost: 0
+  ProductionTime: 0
+  UnitIcon: {fileID: 0}
   MaxHp: 50
   Damage: 3
   Defend: 10
@@ -31,3 +34,4 @@ MonoBehaviour:
   GatherSearchRadius: 0
   BuildDistance: 0
   BuildingBlueprintDatas: []
+  Costs: []

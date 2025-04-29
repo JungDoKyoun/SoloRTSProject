@@ -21,14 +21,20 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
     public bool IsDestroyed { get { return _isDestroy; } set { _isDestroy = value; } }
     public Vector3 Position => transform.position;
 
-    private void Start()
+    private new void OnEnable()
     {
-        BuildingRegistry.Instance.Register(this);
+        if(BuildingRegistry.Instance != null)
+        {
+            BuildingRegistry.Instance.Register(this);
+        }
     }
 
     private new void OnDisable()
     {
-        BuildingRegistry.Instance.UnRegister(this);
+        if (BuildingRegistry.Instance != null)
+        {
+            BuildingRegistry.Instance.UnRegister(this);
+        }
     }
 
     public void Init(BuildingBlueprintDataSO data, int playerID)

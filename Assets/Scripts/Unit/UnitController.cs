@@ -65,9 +65,12 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public bool IsDestroyed { get { return _isDie; } set { _isDie = value; } }
     public Vector3 Position => transform.position;
 
-    private void Start()
+    private new void OnEnable()
     {
-        UnitRegistry.Instance.Register(this);
+        if (UnitRegistry.Instance != null)
+        {
+            UnitRegistry.Instance.Register(this);
+        }
     }
 
     private new void OnDisable()
@@ -110,7 +113,15 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         _gatherAmountPerTick = _unitData.GatherAmountPerTick;
         _gatherTickInterval = _unitData.GatherTickInterval;
         _currentHP = _maxHP;
-        _unitInstanceID =  unitInstanceID;
+
+        if(unitInstanceID == null)
+        {
+            _unitInstanceID = System.Guid.NewGuid().ToString();
+        }
+        else
+        {
+            _unitInstanceID = unitInstanceID;
+        }
     }
 
     public void InitPlayer(int playerID)
@@ -316,7 +327,7 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
 
         foreach (var other in UnitRegistry.Instance.AllUnits)
         {
-            if (other == null || other == this || !IsEnemy(other))
+            if (other == null || other == this || !IsEnemy(other) || other._isDie)
             {
                 continue;
             }
@@ -416,6 +427,8 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public void Die()
     {
         _isDie = true;
+        Debug.Log(_isDie);
+        Debug.Log(IsDestroyed);
     }
 
     [PunRPC]
@@ -612,6 +625,26 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         unit.UnitStateManager.SetState(Utils.GetStateByName(stateName), unit, destination);
     }
 
+    public void StartDie()
+    {
+        StartCoroutine(DieCO());
+    }
+
+    public void StopAll()
+    {
+        _isSelect = false;
+
+        var col = GetComponent<Collider>();
+        col.enabled = false;
+
+        if(_agent.enabled)
+        {
+            _agent.enabled = false;
+        }
+
+        CommandPanelController.Instance.ClearAll();
+    }
+
     private IEnumerator AttackCo()
     {
         yield return null;
@@ -652,5 +685,24 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
                 yield break;
             }
         }
+    }
+
+    private IEnumerator DieCO()
+    {
+        yield return new WaitForSeconds(3f);
+
+        if(GameModManager.IsMultiplayer)
+        {
+            if(PhotonNetwork.IsMasterClient)
+            {
+                UnitPoolManager.Instance.MultiReleaseUnit(this);
+            }
+        }
+        else
+        {
+            UnitPoolManager.Instance.ReleaseUnit(this);
+        }
+
+        //_isDie = false;
     }
 }

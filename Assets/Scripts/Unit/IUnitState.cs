@@ -12,7 +12,6 @@ public interface IUnitState
 public class IdleState : IUnitState
 {
     private UnitController _unitController;
-    private UnitStateManager _stateManager;
 
     public void Enter(UnitController unitController, Vector3 destination)
     {
@@ -33,14 +32,20 @@ public class IdleState : IUnitState
 
     public void Update()
     {
-        //UnitController target = _unitController.FindTarget();
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
 
-        //if (target != null)
-        //{
-        //    _unitController.SetTarget(target, true);
-        //    _unitController.RequestStateChange("ChaseState");
-        //    return;
-        //}
+        UnitController target = _unitController.FindTarget();
+
+        if (target != null)
+        {
+            _unitController.SetTarget(target, true);
+            _unitController.RequestStateChange("ChaseState");
+            return;
+        }
     }
 }
 
@@ -73,6 +78,12 @@ public class MoveState : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         _unitController.RotateToMoveDirection();
 
         if (_unitController.IsArrive())
@@ -113,6 +124,12 @@ public class ChaseState : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         _unitController.RotateToTarget(_target);
 
         if (_target.IsDestroyed || _target == null)
@@ -160,12 +177,20 @@ public class AttackState : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            Debug.Log("1");
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         _unitController.RotateToTarget(_target);
 
         if (!_unitController.IsAttack)
         {
             if (_target == null || _target.IsDestroyed)
             {
+                Debug.Log("2");
                 _unitController.ClearTarget();
                 _unitController.RequestStateChange("IdleState");
                 return;
@@ -213,6 +238,12 @@ public class MoveAttackState : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         if (_unitController.IsArrive())
         {
             _unitController.RequestStateChange("IdleState");
@@ -262,9 +293,15 @@ public class MoveToGatherState : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         if (_resources == null || _resources.RemainAmount <= 0)
         {
-            var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _resources.Type);
+            var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _unitController.CurrentResourceType);
 
             if(res != null)
             {
@@ -315,7 +352,13 @@ public class GatherState : IUnitState
 
     public void Update()
     {
-        if(_resources == null || _resources.RemainAmount <= 0)
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
+        if (_resources == null || _resources.RemainAmount <= 0)
         {
             var res = Utils.FindNearestAvailableResource(_unitController.transform.position, _unitController.UnitData.GatherSearchRadius, _unitController.CurrentResourceType);
 
@@ -380,6 +423,12 @@ public class ReturnToBaseState : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         var depot = Utils.FindNearestOwnedDepot(_unitController);
 
         if(depot != null)
@@ -444,6 +493,12 @@ public class MoveToBuildstate : IUnitState
 
     public void Update()
     {
+        if (_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         float distance = Vector3.Distance(_unitController.transform.position, _destination);
 
         if(distance <= _unitController.UnitData.BuildDistance)
@@ -487,6 +542,12 @@ public class BuildState : IUnitState
 
     public void Update()
     {
+        if(_unitController.IsDestroyed)
+        {
+            _unitController.RequestStateChange("DieState");
+            return;
+        }
+
         if(_building == null)
         {
             _unitController.RequestStateChange("IdleState");
@@ -499,6 +560,44 @@ public class BuildState : IUnitState
         {
             _building.IsComplete = true;
             _building.CompleteConstruction(_destination);
+            _unitController.RequestStateChange("IdleState");
+            return;
+        }
+    }
+}
+
+public class DieState : IUnitState
+{
+    private UnitController _unitController;
+
+    public void Enter(UnitController unitController, Vector3 destination)
+    {
+        _unitController = unitController;
+
+        Debug.Log("Á×À½");
+        unitController.PlayAnime("IsDie", true);
+        unitController.StartDie();
+        unitController.ClearTarget();
+        unitController.StopAttack();
+        unitController.StopGather();
+        unitController.MoveStop();
+        unitController.StopAll();
+    }
+
+    public void Exit()
+    {
+        _unitController.PlayAnime("IsDie", false);
+    }
+
+    public void FixedUpdate()
+    {
+        
+    }
+
+    public void Update()
+    {
+        if(!_unitController.IsDestroyed)
+        {
             _unitController.RequestStateChange("IdleState");
             return;
         }

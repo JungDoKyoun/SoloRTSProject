@@ -5,8 +5,33 @@ using UnityEngine;
 
 public class CommandPanelController : MonoBehaviour
 {
+    private static CommandPanelController _instance;
     [SerializeField] private CommadButton[] _buttons;
     [SerializeField] private Sprite _attackIcon, _buildIcon, _cancleIcon;
+
+    private void Awake()
+    {
+        if(_instance == null)
+        {
+            _instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public static CommandPanelController Instance
+    {
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = FindObjectOfType<CommandPanelController>();
+            }
+            return _instance;
+        }
+    }
 
     public void ClearAll()
     {
@@ -21,6 +46,11 @@ public class CommandPanelController : MonoBehaviour
         ClearAll();
         Debug.Log((unit.IsWorker()));
         if(unit == null)
+        {
+            return;
+        }
+
+        if(unit.IsDestroyed)
         {
             return;
         }
@@ -106,13 +136,16 @@ public class CommandPanelController : MonoBehaviour
         }
 
         var unitProductionList = building.GetBuildingData().TrainableUnits;
-
+        Debug.Log(unitProductionList.Count);
         for(int i = 0; i < _buttons.Length; i++)
         {
+            Debug.Log("버튼");
             if(i < unitProductionList.Count)
             {
+                Debug.Log("유닛 목록");
                 int index = i;
                 var data = unitProductionList[index];
+                Debug.Log(unitProductionList[index]);
                 _buttons[i].SetCommandButton(data.UnitIcon, () =>
                 {
                     if(building is IUnitProducer producer)

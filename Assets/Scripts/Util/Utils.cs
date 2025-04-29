@@ -92,6 +92,8 @@ public static class Utils
                 return new MoveToBuildstate();
             case "BuildState":
                 return new BuildState();
+            case "DieState":
+                return new DieState();
             default:
                 return new IdleState();
         }

@@ -16,8 +16,8 @@ MonoBehaviour:
   ID: 0
   Prefab: {fileID: 155500, guid: 4c377d3880e82d2429398598d40b2f96, type: 3}
   SupplyCost: 0
-  ProductionTime: 0
-  UnitIcon: {fileID: 0}
+  ProductionTime: 5
+  UnitIcon: {fileID: -3989417037294542392, guid: dc095ce8d2086f541bd26c7e3a71ef12, type: 3}
   MaxHp: 100
   Damage: 0
   Defend: 0

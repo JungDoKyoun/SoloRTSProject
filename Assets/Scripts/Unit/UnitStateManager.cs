@@ -18,7 +18,7 @@ public class UnitStateManager : MonoBehaviour
 
     public void SetState(IUnitState state, UnitController unitController, Vector3 destination = default)
     {
-        if(_state != null)
+        if (_state != null)
         {
             _state.Exit();
         }

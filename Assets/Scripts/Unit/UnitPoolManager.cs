@@ -82,6 +82,7 @@ public class UnitPoolManager : MonoBehaviourPunCallbacks
         unit.Init(manger, playerID, unitInstanceID);
 
         unit.transform.position = pos;
+
         _activeUnit[unit.UnitInstanceID] = unit;
 
         return unit;
@@ -138,7 +139,9 @@ public class UnitPoolManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RPCReleaseUnit(string unitID)
     {
-        var unit = _activeUnit[unitID];
-        ReleaseUnit(unit);
+        if (_activeUnit.TryGetValue(unitID, out var unit))
+        {
+            ReleaseUnit(unit);
+        }
     }
 }

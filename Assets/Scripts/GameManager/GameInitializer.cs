@@ -53,7 +53,7 @@ public class GameInitializer : MonoBehaviour
             for (int i = 0; i < 4; i++)
             {
                 Vector3 sponPos = pos.position + new Vector3(1 * i, 0, -4);
-                UnitController unit = Instantiate(_humanUnitPrefab, sponPos, Quaternion.identity).GetComponent<UnitController>();
+                UnitController unit = UnitPoolManager.Instance.GetUnit(player.RaceType, _humanUnitData, player.PlayerID, sponPos);
                 UnitManager unitManager = unit.GetComponent<UnitManager>(); 
                 unit.Init(unitManager, player.PlayerID);
             }

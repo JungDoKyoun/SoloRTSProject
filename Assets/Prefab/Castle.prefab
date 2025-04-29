@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 37817696592991791}
   - component: {fileID: 7863467802526043963}
   - component: {fileID: 4321429881751925278}
+  - component: {fileID: -217149293709740782}
   m_Layer: 0
   m_Name: Castle
   m_TagString: Untagged
@@ -135,3 +136,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e7558a6ac721f445a1358ee9c97580e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!208 &-217149293709740782
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4123018823213194525}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 4.03, y: 4.0280004, z: 5.4670005}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.059000004, y: 0.004, z: 4.9410005}
+  m_TimeToStationary: 0.5

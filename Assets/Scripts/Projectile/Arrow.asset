@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ProjectileName: Arrow
   ProjectilePrefab: {fileID: 2028085129548691007, guid: 92363d07953193b4c847396d79e1fd6e, type: 3}
-  Damage: 10
+  Damage: 20
   Speed: 4
