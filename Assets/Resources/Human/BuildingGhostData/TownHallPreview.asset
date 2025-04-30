@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b4148054bf61a24c8591c2bf883d29a, type: 3}
+  m_Name: TownHallPreview
+  m_EditorClassIdentifier: 
+  Name: TownHallPreview
+  PreviewPrefab: {fileID: 7716925683186032869, guid: 4241208c3b4a1e1498e759eb774e36ba, type: 3}
+  PreviewName: TownHallPreview
+  BuildingPrefab: {fileID: 4205630798997480261, guid: 8c8d72c4ebb49f4459f614f4c525cbc3, type: 3}
+  BuildingName: TownHall
+  BuildTime: 30
+  Icon: {fileID: 21300000, guid: 1e73a54cdc35dfa4486c4186598f7baf, type: 3}
+  MaxHP: 3000
+  Defend: 0
+  buildingData: {fileID: 11400000, guid: 678e1ebaaec701c47a26c8342c208d18, type: 2}
+  ResourceCosts:
+  - ResourcesType: 0
+    Amount: 0
+  - ResourcesType: 1
+    Amount: 0

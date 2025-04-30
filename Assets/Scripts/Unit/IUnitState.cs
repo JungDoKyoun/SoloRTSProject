@@ -575,7 +575,7 @@ public class DieState : IUnitState
         _unitController = unitController;
 
         Debug.Log("Á×À½");
-        unitController.PlayAnime("IsDie", true);
+        unitController.PlayAnime("Die", true);
         unitController.StartDie();
         unitController.ClearTarget();
         unitController.StopAttack();
@@ -586,7 +586,7 @@ public class DieState : IUnitState
 
     public void Exit()
     {
-        _unitController.PlayAnime("IsDie", false);
+        _unitController.PlayAnime("Die", false);
     }
 
     public void FixedUpdate()

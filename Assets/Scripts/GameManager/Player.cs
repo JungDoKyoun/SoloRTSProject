@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum TeamType
+{
+    Team1, Team2
+}
+
 public enum RaceType
 {
-    Human,asdasf
+    Human
 }
 
 public class Player

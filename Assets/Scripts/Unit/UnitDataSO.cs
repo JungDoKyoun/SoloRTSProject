@@ -13,6 +13,15 @@ public enum UnitType
     Normal,Worker
 }
 
+public enum UnitRole
+{
+    Worker,
+    Melee,
+    Ranged,
+    Rider,
+    Healer
+}
+
 [CreateAssetMenu(fileName = "UnitData", menuName = "SO/UnitDataSO", order = 0)]
 public class UnitDataSO : ScriptableObject
 {
@@ -48,4 +57,7 @@ public class UnitDataSO : ScriptableObject
 
     [Header("생산 비용")]
     public List<ResourceCost> Costs;
+
+    [Header("AI전략 관련")]
+    public UnitRole UnitRole;
 }

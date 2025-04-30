@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class UnitProductionQueue : MonoBehaviour
 {
@@ -97,7 +98,20 @@ public class UnitProductionQueue : MonoBehaviour
 
                 if (!Physics.CheckSphere(checkPos, 0.5f, LayerMask.GetMask("Unit")))
                 {
-                    return checkPos;
+                    if(NavMesh.SamplePosition(checkPos, out NavMeshHit hit, 10f, NavMesh.AllAreas))
+                    {
+                        return hit.position;
+                    }
+                    else
+                    {
+                        Ray ray = new Ray(checkPos + Vector3.up * 5f, Vector3.down);
+                        if (Physics.Raycast(ray, out RaycastHit rayHit, 10f, LayerMask.GetMask("Ground")))
+                        {
+                            return rayHit.point;
+                        }
+
+                        return checkPos;
+                    }
                 }
             }
         }

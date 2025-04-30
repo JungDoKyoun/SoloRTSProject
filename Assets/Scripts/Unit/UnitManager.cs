@@ -9,6 +9,7 @@ public class UnitManager : MonoBehaviour
     [HideInInspector] public UnitStateManager UnitStateManager { get; private set; }
     [HideInInspector] public UnitController UnitController { get; private set; }
     [HideInInspector] public NavMeshAgent NavMeshAgent { get; private set; }
+    [HideInInspector] public NavMeshObstacle Obstacle { get; private set; }
     [HideInInspector] public Renderer Renderer { get; private set; }
     [HideInInspector] public Animator Anime { get; private set; }
 
@@ -17,6 +18,7 @@ public class UnitManager : MonoBehaviour
         UnitStateManager = GetComponent<UnitStateManager>();
         UnitController = GetComponent<UnitController>();
         NavMeshAgent = GetComponent<NavMeshAgent>();
+        Obstacle = GetComponent<NavMeshObstacle>();
         Renderer = GetComponent<Renderer>();
         Anime = GetComponent<Animator>();
     }

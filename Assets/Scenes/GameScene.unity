@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 61192580}
   - component: {fileID: 61192579}
   - component: {fileID: 61192581}
+  - component: {fileID: 61192582}
   m_Layer: 0
   m_Name: RegistryManager
   m_TagString: Untagged
@@ -178,6 +179,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fcb8b8fe32575eb4cbd50cdd888ea832, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &61192582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61192578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89387de56285dbd48a2be9ab5f2e1daa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &61612154
@@ -3061,12 +3074,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _humanBuildData: {fileID: 11400000, guid: 6620bb545880067429fc971a8d52a4eb, type: 2}
-  _humanBuildPrefab: {fileID: 4123018823213194525, guid: 55d0a53ffd2ac654e9cec4db147c8a8e, type: 3}
+  _humanBuildPrefab: {fileID: 4205630798997480261, guid: 8c8d72c4ebb49f4459f614f4c525cbc3, type: 3}
   _humanUnitData: {fileID: 11400000, guid: b1c8e93532b566045aaebfecdcce1e6f, type: 2}
-  _humanUnitPrefab: {fileID: 7876148479091323196, guid: 7555bdd65543a1f4686d38015b38a9a5, type: 3}
+  _humanUnitPrefab: {fileID: 155500, guid: 4c377d3880e82d2429398598d40b2f96, type: 3}
   _startPos:
   - {fileID: 1655752904}
   - {fileID: 1407115004}
+  _aiPlayerPrefab: {fileID: 3789747246794551999, guid: 3d3b11834aca88048bb441b06fc9e073, type: 3}
 --- !u!4 &1593354614
 Transform:
   m_ObjectHideFlags: 0

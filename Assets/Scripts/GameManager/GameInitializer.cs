@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class GameInitializer : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class GameInitializer : MonoBehaviour
     [Header("시작 위치")]
     [SerializeField] List<Transform> _startPos;
 
+    [Header("AI프리펩")]
+    [SerializeField] GameObject _aiPlayerPrefab;
+
     private void Start()
     {
         InitializeGame();
@@ -32,6 +36,14 @@ public class GameInitializer : MonoBehaviour
 
         foreach (var player in players)
         {
+            if(player.IsAI)
+            {
+                var aiObj = Instantiate(_aiPlayerPrefab);
+                var ai = aiObj.GetComponent<AIPlayer>();
+                ai.Init(player);
+                AIPlayerRegistry.Instance.RegisterAIPlayer(player.PlayerID, ai);
+            }
+
             if(player.RaceType == RaceType.Human)
             {
                 buildData = _humanBuildData;
@@ -40,8 +52,12 @@ public class GameInitializer : MonoBehaviour
             int index = Random.Range(0, startList.Count);
             Transform pos = startList[index];
             startList.RemoveAt(index);
-            Building building = Instantiate(_humanBuildPrefab, pos.position, _humanBuildPrefab.transform.rotation).GetComponent<Building>();
+            var buildingObj = Instantiate(_humanBuildPrefab, pos.position, _humanBuildPrefab.transform.rotation);
+            Building building = buildingObj.GetComponent<Building>();
             building.Init(buildData, player.PlayerID, buildData.MaxHP);
+            buildingObj.AddComponent<NavMeshObstacle>();
+            var nav = buildingObj.GetComponent<NavMeshObstacle>();
+            nav.carving = true;
             MeshRenderer meshRenderer = building.gameObject.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {

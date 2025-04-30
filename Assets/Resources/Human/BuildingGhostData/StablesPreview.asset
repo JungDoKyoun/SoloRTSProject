@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b4148054bf61a24c8591c2bf883d29a, type: 3}
+  m_Name: StablesPreview
+  m_EditorClassIdentifier: 
+  Name: StablesPreview
+  PreviewPrefab: {fileID: 4908775353428113786, guid: f03ad3a925b78e745bc279d185b008a1, type: 3}
+  PreviewName: StablesPreview
+  BuildingPrefab: {fileID: 1257824100063777359, guid: bd7ef4a6bbe45504d98e2ee162d01649, type: 3}
+  BuildingName: Stables
+  BuildTime: 15
+  Icon: {fileID: 21300000, guid: 67c8990d791b0a04988b8b0ae7c25c77, type: 3}
+  MaxHP: 1000
+  Defend: 0
+  buildingData: {fileID: 11400000, guid: 65112b57a3be76a43bcc199f3cd95151, type: 2}
+  ResourceCosts:
+  - ResourcesType: 0
+    Amount: 0
+  - ResourcesType: 1
+    Amount: 0

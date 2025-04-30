@@ -3,15 +3,11 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-public enum TeamType
-{
-    Team1, Team2
-}
-
 public class UnitController : MonoBehaviourPunCallbacks, IAttackable
 {
     [Header("°ø¿ë")]
     private NavMeshAgent _agent;
+    private NavMeshObstacle _obstacle;
     private Renderer _renderer;
     private UnitDataSO _unitData;
     private UnitStateManager _unitStateManager;
@@ -94,6 +90,7 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public void Init(UnitManager unitManager, int playerID, string unitInstanceID = null)
     {
         _agent = unitManager.NavMeshAgent;
+        _obstacle = unitManager.Obstacle;
         _renderer = unitManager.Renderer;
         _unitStateManager = unitManager.UnitStateManager;
         _anime = unitManager.Anime;
@@ -105,8 +102,10 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         _agent.updateRotation = false;
         _agent.angularSpeed = 0f;
         _agent.acceleration = 1000f;
-        _agent.stoppingDistance = 0f;
+        _agent.stoppingDistance = 0.2f;
         _agent.speed = _unitData.MoveSpeed;
+        _agent.enabled = false;
+        _obstacle.enabled = true;
         _maxHP = _unitData.MaxHp;
         _unitType = _unitData.UnitType;
         _maxCarryAmount = _unitData.MaxCarryAmount;
@@ -202,6 +201,8 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public void MoveTo(Vector3 destination)
     {
         SetMoveDestination(destination);
+        _obstacle.enabled = false;
+        _agent.enabled = true;
         _agent.isStopped = false;
         _agent.SetDestination(destination);
         PlayAnime("Walk", true);
@@ -245,6 +246,8 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public void MoveStop()
     {
         _agent.ResetPath();
+        _agent.enabled = false;
+        _obstacle.enabled = true;
         PlayAnime("Walk", false);
     }
 
@@ -360,11 +363,6 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     {
         double currentTime = Utils.GetTime();
         return currentTime - _lastAttack >= UnitData.AttackCoolTime;
-    }
-
-    public void ResetBool()
-    {
-        _isAttack = false;
     }
 
     public void TakeDamage(int damage)

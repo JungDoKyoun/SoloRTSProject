@@ -4,7 +4,6 @@ using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static Photon.Pun.UtilityScripts.PunTeams;
 
 public class PlayerSlot : MonoBehaviour
 {

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39de8e6d0e08c5a4f93be837ff01d86d, type: 3}
+  m_Name: Archery
+  m_EditorClassIdentifier: 
+  Name: Archery
+  MaxHP: 1000
+  Defend: 0
+  Sight: 10
+  SupplyProvided: 0
+  IsCanProduceUnits: 1
+  TrainableUnits:
+  - {fileID: 11400000, guid: 63fdb6bc7891fcd4b87f22bd89b80be5, type: 2}
+  - {fileID: 11400000, guid: f14e007a33fa65840837df89a53d2362, type: 2}
+  BuildingRole: 2

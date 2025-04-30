@@ -107,6 +107,8 @@ public class CommandPanelController : MonoBehaviour
                 _buttons[i].Clear();
             }
         }
+
+        _buttons[11].SetCommandButton(_cancleIcon, () => ShowUnitUI(unit));
     }
 
     public void ShowIncompleteBuildingUI(Building building)

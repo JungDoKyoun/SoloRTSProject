@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class BuildGhostPlacer : MonoBehaviour
 {
@@ -80,7 +81,7 @@ public class BuildGhostPlacer : MonoBehaviour
 
         _building = _ghost.GetComponent<Building>();
         var buildSize = Utils.GetBuildSize(_ghost);
-        Vector3 half = _data.BuildSize * 0.5f;
+        Vector3 half = buildSize * 0.5f;
 
         if(Physics.OverlapBox(pos, half, Quaternion.identity, LayerMask.GetMask("Unit", "Building", "Resources")).Length > 0)
         {
@@ -181,6 +182,9 @@ public class BuildGhostPlacer : MonoBehaviour
                         boxCollider.center = meshRenderer.bounds.center - _building.transform.position;
                         boxCollider.size = meshRenderer.bounds.size;
                     }
+                    _building.AddComponent<NavMeshObstacle>();
+                    var nav = _building.GetComponent<NavMeshObstacle>();
+                    nav.carving = true;
                     StartBuild(hit.point);
                     _ghost = null;
                 }
