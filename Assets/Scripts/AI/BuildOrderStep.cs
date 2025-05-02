@@ -13,9 +13,9 @@ public enum BuildConditionType
 [System.Serializable]
 public class BuildOrderStep
 {
-    public BuildingRole BuildingRole;
+    public int UnitID;
     public BuildConditionType BuildConditionType;
     public int Threshold;
     public float Weight;
-    public BuildingRole RequiredTech;
+    public int RequiredTechID;
 }

@@ -19,4 +19,4 @@ MonoBehaviour:
   SupplyProvided: 0
   IsCanProduceUnits: 0
   TrainableUnits: []
-  BuildingRole: 0
+  ID: 8

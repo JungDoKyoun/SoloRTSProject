@@ -20,4 +20,4 @@ MonoBehaviour:
   IsCanProduceUnits: 1
   TrainableUnits:
   - {fileID: 11400000, guid: fed8c275c30cfa448ba236a4a91434bf, type: 2}
-  BuildingRole: 4
+  ID: 4

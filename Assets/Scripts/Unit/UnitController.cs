@@ -424,14 +424,14 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
 
     public void Die()
     {
+        UnitRegistry.Instance.UnRegister(this);
         _isDie = true;
-        Debug.Log(_isDie);
-        Debug.Log(IsDestroyed);
     }
 
     [PunRPC]
     private void RPCSyncDie()
     {
+        UnitRegistry.Instance.UnRegister(this);
         _isDie = true;
     }
 

@@ -14,7 +14,7 @@ public enum TrainConditionType
 [System.Serializable]
 public class TrainOrderStep
 {
-    public UnitRole UnitRole;
+    public int UnitID;
     public TrainConditionType ConditionType;
     public int Threshold;
     public float Weight;

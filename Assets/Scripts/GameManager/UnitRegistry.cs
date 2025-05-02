@@ -35,4 +35,9 @@ public class UnitRegistry : MonoBehaviour
             _allUnits.Remove(unit);
         }
     }
+
+    public List<UnitController> GetAllUnits(int playerId, int unitID)
+    {
+        return _allUnits.FindAll(u => u.Player.PlayerID == playerId && u.UnitData.ID == unitID);
+    }
 }

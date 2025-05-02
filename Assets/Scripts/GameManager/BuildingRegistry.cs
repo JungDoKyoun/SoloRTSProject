@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BuildingRegistry : MonoBehaviour
@@ -46,5 +47,15 @@ public class BuildingRegistry : MonoBehaviour
         {
             _allBuildings.Remove(building);
         }
+    }
+
+    public int GetBuildingByID(int playerID, int buildingID)
+    {
+        return _allBuildings.Count(b => b.Player.PlayerID == playerID && b.GetBuildData().ID == buildingID);
+    }
+
+    public bool HasBuilding(int playerID, int buildingID)
+    {
+        return GetBuildingByID(playerID, buildingID) > 0;
     }
 }

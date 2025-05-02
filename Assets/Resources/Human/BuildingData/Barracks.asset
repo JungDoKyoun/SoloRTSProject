@@ -22,4 +22,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fdc144da3a11e24428782bef9b11aeb0, type: 2}
   - {fileID: 11400000, guid: e0047216ad0797d43a8a58192b63b159, type: 2}
   - {fileID: 11400000, guid: bcde1e7abbdd9f3419921d68bbb1f417, type: 2}
-  BuildingRole: 1
+  ID: 2

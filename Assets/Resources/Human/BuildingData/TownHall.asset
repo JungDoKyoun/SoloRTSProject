@@ -16,8 +16,9 @@ MonoBehaviour:
   MaxHP: 3000
   Defend: 0
   Sight: 10
+  CanSupply: 1
   SupplyProvided: 20
   IsCanProduceUnits: 1
   TrainableUnits:
   - {fileID: 11400000, guid: b1c8e93532b566045aaebfecdcce1e6f, type: 2}
-  BuildingRole: 0
+  ID: 0

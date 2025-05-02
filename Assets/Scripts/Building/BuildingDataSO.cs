@@ -2,19 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BuildingRole
-{
-    None,
-    Base,
-    Barracks,
-    Archery,
-    Stables,
-    Temple,
-    SupplyDepot,
-    Tech1,
-    Tech2
-}
-
 [CreateAssetMenu(fileName = "BuildingData", menuName = "SO/BuildingDataSO", order = 3)]
 public class BuildingDataSO : ScriptableObject
 {
@@ -25,6 +12,7 @@ public class BuildingDataSO : ScriptableObject
     public float Sight;
 
     [Header("건물 인구관련")]
+    public bool CanSupply;
     public int SupplyProvided;
 
     [Header("건물 유닛 생성")]
@@ -32,5 +20,5 @@ public class BuildingDataSO : ScriptableObject
     public List<UnitDataSO> TrainableUnits;
 
     [Header("AI전략 관련")]
-    public BuildingRole BuildingRole;
+    public int ID;
 }

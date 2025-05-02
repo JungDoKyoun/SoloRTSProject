@@ -18,4 +18,7 @@ public class BuildingBlueprintDataSO : ScriptableObject
 
     [Header("비용")]
     public List<ResourceCost> ResourceCosts;
+
+    [Header("AI 관련")]
+    public int ID;
 }

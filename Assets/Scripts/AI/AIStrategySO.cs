@@ -5,6 +5,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName ="AIStrategyData", menuName = "SO/AIStrategySO",order = 5)]
 public class AIStrategySO : ScriptableObject
 {
-    public List<TrainOrderStep> TrainOrderStep = new List<TrainOrderStep>();
-    public List<BuildOrderStep> BuildOrderStep = new List<BuildOrderStep>();
+    public List<StrategyPhase> StrategyPhases;
 }

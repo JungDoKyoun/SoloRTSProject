@@ -84,7 +84,7 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
             Destroy(gameObject);
         }
 
-        if (_data.SupplyProvided > 0)
+        if (_data.CanSupply)
         {
             _player.IncreaseMaxSupply(_data.SupplyProvided);
         }
@@ -188,6 +188,7 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
 
     public void DestroyBuilding()
     {
+        BuildingRegistry.Instance.UnRegister(this);
         _isDestroy = true;
         Destroy(gameObject);
     }
@@ -195,6 +196,7 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
     [PunRPC]
     public void RPCDestroyBuilding()
     {
+        BuildingRegistry.Instance.UnRegister(this);
         _isDestroy = true;
         PhotonNetwork.Destroy(gameObject);
     }

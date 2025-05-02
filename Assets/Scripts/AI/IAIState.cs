@@ -13,6 +13,7 @@ public class AIStartState : IAIState
     private AIPlayer _aiPlayer;
     private AIStateManager _aiStateManager;
     private float _startTime;
+    private float _waitDuration = 1f;
 
     public void Enter(AIPlayer aiPlayer, AIStateManager aiStateManager)
     {
@@ -20,11 +21,33 @@ public class AIStartState : IAIState
         _aiStateManager = aiStateManager;
         _startTime = Time.time;
 
-        Debug.Log("초기 전략 들어옴");
+        AIWorkerManager.AssignInitialWorkers(aiPlayer);
     }
 
     public void Update()
     {
-        Debug.Log("초기전략 진행중");
+        if(Time.time - _startTime >= _waitDuration)
+        {
+            _aiStateManager.SetState(new AIBuildState(), _aiPlayer, _aiStateManager);
+        }
+    }
+}
+
+public class AIBuildState : IAIState
+{
+    private AIPlayer _aiPlayer;
+    private AIStateManager _aiStateManager;
+    private float _startTime;
+
+    public void Enter(AIPlayer aiPlayer, AIStateManager aiStateManager)
+    {
+        _aiPlayer = aiPlayer;
+        _aiStateManager = aiStateManager;
+        _startTime = Time.time;
+    }
+
+    public void Update()
+    {
+        
     }
 }

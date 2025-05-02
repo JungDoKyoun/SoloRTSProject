@@ -4,70 +4,71 @@ using UnityEngine;
 
 public class AIMapping
 {
-    private Dictionary<UnitRole, List<UnitDataSO>> _unitMap = new Dictionary<UnitRole, List<UnitDataSO>>();
-    private Dictionary<BuildingRole, BuildingBlueprintDataSO> _buildingMap = new Dictionary<BuildingRole, BuildingBlueprintDataSO>();
-
-    public Dictionary<UnitRole, List<UnitDataSO>> UnitMap { get { return _unitMap; } }
-    public Dictionary<BuildingRole, BuildingBlueprintDataSO> BuildingMap { get { return _buildingMap; } }
+    private Dictionary<int, UnitDataSO> _unitIDMap = new Dictionary<int, UnitDataSO>();
+    private Dictionary<int, BuildingBlueprintDataSO> _buildingIDMap = new Dictionary<int, BuildingBlueprintDataSO>();
 
     public void Init(RaceType race)
     {
         switch(race)
         {
             case RaceType.Human:
-                AddUnit(UnitRole.Worker, "Human/UnitData/Peasant");
-                AddUnit(UnitRole.Melee, "Human/UnitData/Shield");
-                AddUnit(UnitRole.Melee, "Human/UnitData/Halberdier");
-                AddUnit(UnitRole.Melee, "Human/UnitData/HeavySwordman");
-                AddUnit(UnitRole.Ranged, "Human/UnitData/Archer");
-                AddUnit(UnitRole.Ranged, "Human/UnitData/Crossbowman");
-                AddUnit(UnitRole.Healer, "Human/UnitData/HighPriest");
-                AddUnit(UnitRole.Rider, "Human/UnitData/Knight");
+                AddUnit("Human/UnitData/Peasant");
+                AddUnit("Human/UnitData/Shield");
+                AddUnit("Human/UnitData/Halberdier");
+                AddUnit("Human/UnitData/HeavySwordman");
+                AddUnit("Human/UnitData/Archer");
+                AddUnit("Human/UnitData/Crossbowman");
+                AddUnit("Human/UnitData/HighPriest");
+                AddUnit("Human/UnitData/Knight");
 
-                AddBuilding(BuildingRole.Base, "Human/BuildingGhostData/TownHallPreview");
-                AddBuilding(BuildingRole.SupplyDepot, "Human/BuildingGhostData/HousePreview");
-                AddBuilding(BuildingRole.Barracks, "Human/BuildingGhostData/BarracksPreview");
-                AddBuilding(BuildingRole.Archery, "Human/BuildingGhostData/ArcheryPreview");
-                AddBuilding(BuildingRole.Temple, "Human/BuildingGhostData/TemplePreview");
-                AddBuilding(BuildingRole.Stables, "Human/BuildingGhostData/StablesPreview");
-                AddBuilding(BuildingRole.None, "Human/BuildingGhostData/CastlePreview");
-                AddBuilding(BuildingRole.Tech1, "Human/BuildingGhostData/BlacksmithPreview");
-                AddBuilding(BuildingRole.Tech2, "Human/BuildingGhostData/LibraryPreview");
+                AddBuilding("Human/BuildingGhostData/TownHallPreview");
+                AddBuilding("Human/BuildingGhostData/HousePreview");
+                AddBuilding("Human/BuildingGhostData/BarracksPreview");
+                AddBuilding("Human/BuildingGhostData/ArcheryPreview");
+                AddBuilding("Human/BuildingGhostData/TemplePreview");
+                AddBuilding("Human/BuildingGhostData/StablesPreview");
+                AddBuilding("Human/BuildingGhostData/BlacksmithPreview");
+                AddBuilding("Human/BuildingGhostData/LibraryPreview");
+                AddBuilding("Human/BuildingGhostData/CastlePreview");
                 break;
         }
     }
 
-    private void AddUnit(UnitRole unitRole, string path)
+    private void AddUnit(string path)
     {
         var unitData = Resources.Load<UnitDataSO>(path);
 
         if(unitData != null)
         {
-            if(!_unitMap.ContainsKey(unitRole))
+            if(!_unitIDMap.ContainsKey(unitData.ID))
             {
-                _unitMap[unitRole] = new List<UnitDataSO>();
+                _unitIDMap.Add(unitData.ID, unitData);
             }
-
-            _unitMap[unitRole].Add(unitData);
         }
     }
 
-    private void AddBuilding(BuildingRole buildingRole, string path)
+    private void AddBuilding(string path)
     {
         var buildingData = Resources.Load<BuildingBlueprintDataSO>(path);
 
         if(buildingData != null)
         {
-            if(!_buildingMap.ContainsKey(buildingRole))
+            if(!_buildingIDMap.ContainsKey(buildingData.ID))
             {
-                _buildingMap[buildingRole] = buildingData;
+                _buildingIDMap.Add(buildingData.ID, buildingData);
             }
         }
     }
 
-    public BuildingBlueprintDataSO GetBuildingData(BuildingRole buildingRole)
+    public UnitDataSO GetUnitByID(int id)
     {
-        _buildingMap.TryGetValue(buildingRole, out var buildingData);
-        return buildingData;
+        _unitIDMap.TryGetValue(id, out var unit);
+        return unit;
+    }
+
+    public BuildingBlueprintDataSO GetBuildingByID(int id)
+    {
+        _buildingIDMap.TryGetValue(id, out var building);
+        return building;
     }
 }
