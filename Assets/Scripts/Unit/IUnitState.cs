@@ -577,10 +577,6 @@ public class DieState : IUnitState
         Debug.Log("Á×À½");
         unitController.PlayAnime("Die", true);
         unitController.StartDie();
-        unitController.ClearTarget();
-        unitController.StopAttack();
-        unitController.StopGather();
-        unitController.MoveStop();
         unitController.StopAll();
     }
 

@@ -15,7 +15,20 @@ public class MoveCommand : ICommand
 
     public void Execute()
     {
-        _unitController.SetMoveDestination(_destination);
-        _unitController.RequestStateChange("MoveState", _destination);
+        if (_unitController.IsAIUnit)
+        {
+            if (_unitController.CurrentUnitTask != UnitTask.Moveing || Vector3.Distance(_unitController.GetMoveDestination(), _destination) > 0.1f)
+            {
+                _unitController.SetTask(UnitTask.Moveing);
+                _unitController.SetMoveDestination(_destination);
+                _unitController.RequestStateChange("MoveState", _destination);
+            }
+        }
+        else
+        {
+            _unitController.SetTask(UnitTask.Moveing);
+            _unitController.SetMoveDestination(_destination);
+            _unitController.RequestStateChange("MoveState", _destination);
+        }
     }
 }

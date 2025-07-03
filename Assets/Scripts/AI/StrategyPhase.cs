@@ -12,7 +12,8 @@ public class StrategyPhase
     public List<TrainOrderStep> TrainOrderStep = new List<TrainOrderStep>();
     public List<BuildOrderStep> BuildOrderStep = new List<BuildOrderStep>();
 
-    [Header("일꾼 자원 배치 목표 수")]
+    [Header("일꾼 관련")]
+    public List<ResourcesType> GatherPattern = new List<ResourcesType>();
     public int TargetGoldWorkerCount;
     public int TargetWoodWorkerCount;
 }

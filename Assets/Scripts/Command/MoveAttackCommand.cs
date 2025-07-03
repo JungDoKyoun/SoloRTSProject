@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class MoveAttackCommand : ICommand
 {
@@ -15,7 +16,21 @@ public class MoveAttackCommand : ICommand
 
     public void Execute()
     {
-        _unitController.SetMoveDestination(_destination);
-        _unitController.RequestStateChange("MoveAttackState", _destination);
+        if (_unitController.IsAIUnit)
+        {
+            if (_unitController.CurrentUnitTask != UnitTask.Chasing || Vector3.Distance(_unitController.GetMoveDestination(), _destination) > 0.1f)
+            {
+                _unitController.ResetTask();
+                _unitController.SetTask(UnitTask.Chasing);
+                _unitController.SetMoveDestination(_destination);
+                _unitController.RequestStateChange("MoveAttackState", _destination);
+            }
+        }
+        else
+        {
+            _unitController.SetTask(UnitTask.Chasing);
+            _unitController.SetMoveDestination(_destination);
+            _unitController.RequestStateChange("MoveAttackState", _destination);
+        }
     }
 }

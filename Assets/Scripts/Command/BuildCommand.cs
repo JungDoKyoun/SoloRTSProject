@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class BuildCommand : ICommand
 {
@@ -19,9 +20,24 @@ public class BuildCommand : ICommand
 
     public void Execute()
     {
-        _unitController.SetBuilding(_building);
-        _unitController.SetBuildData(_data);
-        _unitController.SetMoveDestination(_destination);
-        _unitController.RequestStateChange("MoveToBuildstate", _destination);
+        if (_unitController.IsAIUnit)
+        {
+            if (_unitController.CurrentUnitTask != UnitTask.Building || Vector3.Distance(_unitController.GetMoveDestination(), _destination) > 0.1f)
+            {
+                _unitController.SetTask(UnitTask.Building);
+                _unitController.SetBuilding(_building);
+                _unitController.SetBuildData(_data);
+                _unitController.SetMoveDestination(_destination);
+                _unitController.RequestStateChange("MoveToBuildstate", _destination);
+            }
+        }
+        else
+        {
+            _unitController.SetTask(UnitTask.Building);
+            _unitController.SetBuilding(_building);
+            _unitController.SetBuildData(_data);
+            _unitController.SetMoveDestination(_destination);
+            _unitController.RequestStateChange("MoveToBuildstate", _destination);
+        }
     }
 }

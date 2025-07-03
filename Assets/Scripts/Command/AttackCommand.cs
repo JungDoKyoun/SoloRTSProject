@@ -15,7 +15,20 @@ public class AttackCommand : ICommand
 
     public void Execute()
     {
-        _unitController.SetTarget(_target, true);
-        _unitController.RequestStateChange("ChaseState");
+        if(_unitController.IsAIUnit)
+        {
+            if(_unitController.CurrentUnitTask != UnitTask.Attacking || _unitController.GetTarget() != _target)
+            {
+                _unitController.SetTask(UnitTask.Attacking);
+                _unitController.SetTarget(_target, true);
+                _unitController.RequestStateChange("ChaseState");
+            }
+        }
+        else
+        {
+            _unitController.SetTask(UnitTask.Attacking);
+            _unitController.SetTarget(_target, true);
+            _unitController.RequestStateChange("ChaseState");
+        }
     }
 }

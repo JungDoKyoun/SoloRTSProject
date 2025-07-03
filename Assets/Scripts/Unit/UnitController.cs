@@ -3,6 +3,11 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
+public enum UnitTask
+{
+    None, GatheringGold, GatheringWood, Building, MovingToBuild, Attacking, Chasing, Moveing, Healing, Idle
+}
+
 public class UnitController : MonoBehaviourPunCallbacks, IAttackable
 {
     [Header("공용")]
@@ -16,11 +21,13 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     private Player _player;
     private UnitType _unitType;
     private Vector3 _moveDestination;
+    private UnitTask _currentUnitTask = UnitTask.None;
     private string _unitInstanceID;
     private int _maxHP;
     private float _currentHP;
     private bool _isSelect = false;
     private bool _isDie = false;
+    private bool _isAIUnit = false;
 
     [Header("공격관련")]
     private IAttackStrategy _attackStrategy;
@@ -40,6 +47,7 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     private int _currentCarryAmount;
     private int _gatherAmountPerTick;
     private float _gatherTickInterval;
+    private float _gatherSearchRadius;
     private bool _isGather = false;
     private bool _isFull = false;
     private Coroutine _gatherCoroutine;
@@ -50,8 +58,10 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public Player Player => _player;
     public UnitType UnitType => _unitType;
     public ResourcesType CurrentResourceType => _currentResourceType;
+    public UnitTask CurrentUnitTask => _currentUnitTask;
     public string UnitInstanceID => _unitInstanceID;
     public float CurrentHP { get { return _currentHP; } set { _currentHP = value; } }
+    public float GatherSearchRadius { get { return _gatherSearchRadius; } set { _gatherSearchRadius = value; } }
     public int CurrentCarryAmount { get { return _currentCarryAmount; } set { _currentCarryAmount = value; } }
     public bool IsSelect { get { return _isSelect; } set { _isSelect = value; } }
     public bool IsManualAttack { get { return _isManualAttack; } set { _isManualAttack = value; } }
@@ -59,6 +69,7 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public bool IsGather { get { return _isGather; } set { _isGather = value; } }
     public bool IsFull { get { return _isFull; } set { _isFull = value; } }
     public bool IsDestroyed { get { return _isDie; } set { _isDie = value; } }
+    public bool IsAIUnit => _isAIUnit;
     public Vector3 Position => transform.position;
 
     private new void OnEnable()
@@ -96,6 +107,15 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         _anime = unitManager.Anime;
         _unitData = unitManager.UnitDataSO;
         _player = PlayerManager.Instance.GetPlayer(playerID);
+        var aiPlayer = AIPlayerRegistry.Instance.GetAIPlayer(playerID);
+        if(aiPlayer != null)
+        {
+            _isAIUnit = true;
+        }
+        else
+        {
+            _isAIUnit = false;
+        }
 
         _unitStateManager.SetState(new IdleState(), this);
         SetAttackType();
@@ -111,6 +131,7 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         _maxCarryAmount = _unitData.MaxCarryAmount;
         _gatherAmountPerTick = _unitData.GatherAmountPerTick;
         _gatherTickInterval = _unitData.GatherTickInterval;
+        _gatherSearchRadius = _unitData.GatherSearchRadius;
         _currentHP = _maxHP;
 
         if(unitInstanceID == null)
@@ -630,6 +651,11 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
 
     public void StopAll()
     {
+        ClearTarget();
+        StopAttack();
+        StopGather();
+        MoveStop();
+
         _isSelect = false;
 
         var col = GetComponent<Collider>();
@@ -641,6 +667,16 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         }
 
         CommandPanelController.Instance.ClearAll();
+    }
+
+    public void SetTask(UnitTask task)
+    {
+        _currentUnitTask = task;
+    }
+
+    public void ResetTask()
+    {
+        _currentUnitTask = UnitTask.None;
     }
 
     private IEnumerator AttackCo()

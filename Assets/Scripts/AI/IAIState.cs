@@ -5,6 +5,7 @@ using UnityEngine;
 public interface IAIState
 {
     public void Enter(AIPlayer aIPlayer, AIStateManager aIStateManager);
+    public void Exit();
     public void Update();
 }
 
@@ -22,6 +23,11 @@ public class AIStartState : IAIState
         _startTime = Time.time;
 
         AIWorkerManager.AssignInitialWorkers(aiPlayer);
+    }
+
+    public void Exit()
+    {
+        
     }
 
     public void Update()
@@ -44,6 +50,11 @@ public class AIBuildState : IAIState
         _aiPlayer = aiPlayer;
         _aiStateManager = aiStateManager;
         _startTime = Time.time;
+    }
+
+    public void Exit()
+    {
+
     }
 
     public void Update()
