@@ -27,4 +27,9 @@ public static class AIWorkerManager
             }
         }
     }
+
+    public static void AssignNewWorker(UnitController worker, AIPlayer aIPlayer)
+    {
+
+    }
 }

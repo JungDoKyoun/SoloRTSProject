@@ -14,6 +14,7 @@ public class AIPlayer : MonoBehaviour
     private TeamType _teamType;
     private float _startTime;
     private int _phaseIndex = 0;
+    private int _workerAssignIndex;
 
     private void Update()
     {
@@ -24,7 +25,9 @@ public class AIPlayer : MonoBehaviour
         CheckPhaseTransition();
     }
 
+    public StrategyPhase CurrentPhase => _currentPhase;
     public int PlayerID => _playerID;
+    public int WorkerAssignIndex { get { return _workerAssignIndex; } set { _workerAssignIndex = value; } }
 
     public void Init(Player player)
     {
