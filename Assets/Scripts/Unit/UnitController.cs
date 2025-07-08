@@ -1,5 +1,6 @@
 using Photon.Pun;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -553,10 +554,43 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         return _buildData;
     }
 
+    public void RequestBuild(Vector3 pos, string buildDataName, int playerID, UnitController worker)
+    {
+        var buildData = Resources.Load<BuildingBlueprintDataSO>($"Human/BuildingGhostData/{buildDataName}");
+        var player = PlayerManager.Instance.GetPlayer(playerID);
+
+        if (buildData == null || player == null || worker == null)
+        {
+            return;
+        }
+
+        player.UseResources(buildData.ResourceCosts);
+        Quaternion ro = Quaternion.Euler(-90, 0, 0);
+        var buildGhostObj = Instantiate(buildData.PreviewPrefab, pos, ro);
+        var building = buildGhostObj.GetComponent<Building>();
+        building.Init(buildData, player.PlayerID);
+
+        MeshRenderer meshRenderer = building.GetComponent<MeshRenderer>();
+        if (meshRenderer != null)
+        {
+            BoxCollider boxCollider = building.AddComponent<BoxCollider>();
+            boxCollider.center = meshRenderer.bounds.center - building.transform.position;
+            boxCollider.size = meshRenderer.bounds.size;
+        }
+        building.AddComponent<NavMeshObstacle>();
+        var nav = building.GetComponent<NavMeshObstacle>();
+        nav.carving = true;
+
+        worker.SetBuildData(buildData);
+        worker.SetBuilding(building);
+
+        new BuildCommand(worker, pos, building, buildData).Execute();
+    }
+
     [PunRPC]
     public void RPCRequestBuild(Vector3 pos, string buildDataName, int playerID, int unitID)
     {
-        var buildData = Resources.Load<BuildingBlueprintDataSO>("BuildingGhostData/" + buildDataName);
+        var buildData = Resources.Load<BuildingBlueprintDataSO>($"Human/BuildingGhostData/{buildDataName}");
         var player = PlayerManager.Instance.GetPlayer(playerID);
         var unit = PhotonView.Find(unitID);
 
@@ -566,10 +600,21 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
         }
 
         player.UseResources(buildData.ResourceCosts);
-        var buildGhostObj = PhotonNetwork.Instantiate(buildData.PreviewName, pos, Quaternion.identity);
+        Quaternion ro = Quaternion.Euler(-90, 0, 0);
+        var buildGhostObj = PhotonNetwork.Instantiate(buildData.PreviewName, pos, ro);
         var building = buildGhostObj.GetComponent<Building>();
         building.Init(buildData, player.PlayerID);
-        var collider = buildGhostObj.AddComponent<MeshCollider>();
+
+        MeshRenderer meshRenderer = building.GetComponent<MeshRenderer>();
+        if (meshRenderer != null)
+        {
+            BoxCollider boxCollider = building.AddComponent<BoxCollider>();
+            boxCollider.center = meshRenderer.bounds.center - building.transform.position;
+            boxCollider.size = meshRenderer.bounds.size;
+        }
+        building.AddComponent<NavMeshObstacle>();
+        var nav = building.GetComponent<NavMeshObstacle>();
+        nav.carving = true;
 
         if (!PhotonNetwork.IsMasterClient)
         {
@@ -677,6 +722,11 @@ public class UnitController : MonoBehaviourPunCallbacks, IAttackable
     public void ResetTask()
     {
         _currentUnitTask = UnitTask.None;
+    }
+
+    public bool IsIdle()
+    {
+        return _unitStateManager.State is IdleState;
     }
 
     private IEnumerator AttackCo()

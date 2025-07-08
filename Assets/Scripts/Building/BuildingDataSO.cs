@@ -10,6 +10,7 @@ public class BuildingDataSO : ScriptableObject
     public int MaxHP;
     public int Defend;
     public float Sight;
+    public float BuildingRadius;
 
     [Header("건물 인구관련")]
     public bool CanSupply;

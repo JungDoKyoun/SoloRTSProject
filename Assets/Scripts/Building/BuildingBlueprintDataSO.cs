@@ -15,6 +15,7 @@ public class BuildingBlueprintDataSO : ScriptableObject
     public int MaxHP;
     public int Defend;
     public BuildingDataSO buildingData;
+    public float BuildingRadius;
 
     [Header("ºñ¿ë")]
     public List<ResourceCost> ResourceCosts;

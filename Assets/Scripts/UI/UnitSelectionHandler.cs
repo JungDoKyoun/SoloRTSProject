@@ -1,9 +1,7 @@
 using Photon.Pun;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEngine.GraphicsBuffer;
 
 public class UnitSelectionHandler : MonoBehaviour
 {
@@ -26,7 +24,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void Awake()
     {
-        if(_instance == null)
+        if (_instance == null)
         {
             _instance = this;
         }
@@ -54,7 +52,7 @@ public class UnitSelectionHandler : MonoBehaviour
     {
         get
         {
-            if(_instance == null)
+            if (_instance == null)
             {
                 _instance = FindObjectOfType<UnitSelectionHandler>();
             }
@@ -66,7 +64,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void PushButton()
     {
-        if(Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.A))
         {
             _isAttackMove = true;
         }
@@ -74,17 +72,17 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void HandleSelectionInput()
     {
-        if(EventSystem.current.IsPointerOverGameObject())
+        if (EventSystem.current.IsPointerOverGameObject())
         {
             return;
         }
 
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if(Physics.Raycast(ray, out hit, 100f))
+            if (Physics.Raycast(ray, out hit, 100f))
             {
                 var targetUnit = hit.collider.GetComponent<UnitController>();
                 var targetBuilding = hit.collider.GetComponent<Building>();
@@ -103,22 +101,22 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
-                if(_isAttackMove && _selectedUnit.Count > 0  &&targetBuilding != null && _selectedUnit[0].IsEnemy(targetBuilding))
+                if (_isAttackMove && _selectedUnit.Count > 0 && targetBuilding != null && _selectedUnit[0].IsEnemy(targetBuilding))
                 {
-                    foreach(var unit in _selectedUnit)
+                    foreach (var unit in _selectedUnit)
                     {
-                        if(unit.IsPlayerUnit(_player))
+                        if (unit.IsPlayerUnit(_player))
                         {
                             new AttackCommand(unit, targetBuilding);
                         }
                     }
                 }
 
-                if(_isAttackMove && ((1 << hit.collider.gameObject.layer)& _groundLayer) != 0)
+                if (_isAttackMove && ((1 << hit.collider.gameObject.layer) & _groundLayer) != 0)
                 {
                     Vector3 detination = hit.point;
 
-                    foreach(var unit in _selectedUnit)
+                    foreach (var unit in _selectedUnit)
                     {
                         if (unit.IsPlayerUnit(_player))
                         {
@@ -139,8 +137,8 @@ public class UnitSelectionHandler : MonoBehaviour
                 {
                     SelectBuilding(targetBuilding);
 
-                    if(targetBuilding.IsPlayerBuilding(_player))
-                    return;
+                    if (targetBuilding.IsPlayerBuilding(_player))
+                        return;
                 }
 
                 _isDragging = true;
@@ -149,12 +147,12 @@ public class UnitSelectionHandler : MonoBehaviour
             }
         }
 
-        if(Input.GetMouseButton(0) && _isDragging)
+        if (Input.GetMouseButton(0) && _isDragging)
         {
             UpdateSelectBox(_startPos, Input.mousePosition);
         }
 
-        if(Input.GetMouseButtonUp(0) && _isDragging)
+        if (Input.GetMouseButtonUp(0) && _isDragging)
         {
             _isDragging = false;
             _selectBox.gameObject.SetActive(false);
@@ -168,7 +166,7 @@ public class UnitSelectionHandler : MonoBehaviour
 
         unit.IsSelect = true;
 
-        if(unit.IsPlayerUnit(_player))
+        if (unit.IsPlayerUnit(_player))
         {
             _selectedUnit.Add(unit);
             _commandPanelController.ShowUnitUI(unit);
@@ -200,14 +198,14 @@ public class UnitSelectionHandler : MonoBehaviour
         List<UnitController> playerUnits = new List<UnitController>();
         List<UnitController> otherUnits = new List<UnitController>();
 
-        foreach(var unit in UnitRegistry.Instance.AllUnits)
+        foreach (var unit in UnitRegistry.Instance.AllUnits)
         {
             Vector3 screenPos = _cam.WorldToScreenPoint(unit.transform.position);
             screenPos.y = Screen.height - screenPos.y;
 
-            if(selectionRect.Contains(screenPos, true))
+            if (selectionRect.Contains(screenPos, true))
             {
-                if(unit.IsPlayerUnit(_player))
+                if (unit.IsPlayerUnit(_player))
                 {
                     playerUnits.Add(unit);
                 }
@@ -218,17 +216,17 @@ public class UnitSelectionHandler : MonoBehaviour
             }
         }
 
-        if(playerUnits.Count == 1)
+        if (playerUnits.Count == 1)
         {
             SelectUnit(playerUnits[0]);
             return;
         }
 
-        if(playerUnits.Count > 1)
+        if (playerUnits.Count > 1)
         {
-            foreach(var unit in playerUnits)
+            foreach (var unit in playerUnits)
             {
-                if(_selectedUnit.Count <= _maxUnitSelectCount)
+                if (_selectedUnit.Count <= _maxUnitSelectCount)
                 {
                     unit.IsSelect = true;
                     _selectedUnit.Add(unit);
@@ -238,17 +236,17 @@ public class UnitSelectionHandler : MonoBehaviour
             //센터 패널
             return;
         }
-        if(playerUnits.Count == 0 && otherUnits.Count > 0)
+        if (playerUnits.Count == 0 && otherUnits.Count > 0)
         {
             SelectUnit(otherUnits[0]);
             return;
         }
 
-        if(_selectedUnit.Count == 0)
+        if (_selectedUnit.Count == 0)
         {
-            foreach(var building in BuildingRegistry.Instance.AllBuildings)
+            foreach (var building in BuildingRegistry.Instance.AllBuildings)
             {
-                if(!building.IsPlayerBuilding(_player))
+                if (!building.IsPlayerBuilding(_player))
                 {
                     continue;
                 }
@@ -256,7 +254,7 @@ public class UnitSelectionHandler : MonoBehaviour
                 Vector3 screenPos = _cam.WorldToScreenPoint(building.transform.position);
                 screenPos.y = Screen.height - screenPos.y;
 
-                if(selectionRect.Contains(screenPos, true))
+                if (selectionRect.Contains(screenPos, true))
                 {
                     SelectBuilding(building);
                     break;
@@ -272,14 +270,14 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void DeselectAll()
     {
-        foreach(var unit in _selectedUnit)
+        foreach (var unit in _selectedUnit)
         {
             unit.IsSelect = false;
         }
 
         _selectedUnit.Clear();
 
-        if(_selectedBuilding != null)
+        if (_selectedBuilding != null)
         {
             _selectedBuilding.IsSelected = false;
             _selectedBuilding = null;
@@ -297,7 +295,7 @@ public class UnitSelectionHandler : MonoBehaviour
         _selectedBuilding = building;
         building.IsSelected = true;
 
-        if(building.IsPlayerBuilding(_player))
+        if (building.IsPlayerBuilding(_player))
         {
             Debug.Log("asd");
             if (building.IsComplete)
@@ -316,12 +314,12 @@ public class UnitSelectionHandler : MonoBehaviour
 
     private void HandleCommand()
     {
-        if(Input.GetMouseButtonDown(1) && _selectedUnit.Count > 0)
+        if (Input.GetMouseButtonDown(1) && _selectedUnit.Count > 0)
         {
             Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if(Physics.Raycast(ray,out hit, 100f))
+            if (Physics.Raycast(ray, out hit, 100f))
             {
                 var targetUnit = hit.collider.GetComponent<UnitController>();
                 var targetBuilding = hit.collider.GetComponent<Building>();
@@ -329,9 +327,9 @@ public class UnitSelectionHandler : MonoBehaviour
 
                 if (targetUnit != null && _selectedUnit.Count > 0 && _selectedUnit[0].IsEnemy(targetUnit))
                 {
-                    foreach(var unit in _selectedUnit)
+                    foreach (var unit in _selectedUnit)
                     {
-                        if(unit.IsPlayerUnit(_player))
+                        if (unit.IsPlayerUnit(_player))
                         {
                             new AttackCommand(unit, targetUnit).Execute();
                         }
@@ -339,11 +337,11 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
-                if(targetBuilding != null && _selectedUnit.Count > 0&& _selectedUnit[0].IsEnemy(targetBuilding))
+                if (targetBuilding != null && _selectedUnit.Count > 0 && _selectedUnit[0].IsEnemy(targetBuilding))
                 {
-                    foreach(var unit in _selectedUnit)
+                    foreach (var unit in _selectedUnit)
                     {
-                        if(unit.IsPlayerUnit(_player))
+                        if (unit.IsPlayerUnit(_player))
                         {
                             new AttackCommand(unit, targetBuilding).Execute();
                         }
@@ -351,13 +349,13 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
-                if(targetResource != null)
+                if (targetResource != null)
                 {
                     Vector3 destination = targetResource.transform.position;
 
                     foreach (var unit in _selectedUnit)
                     {
-                        if(unit.IsPlayerUnit(_player) && unit.IsWorker())
+                        if (unit.IsPlayerUnit(_player) && unit.IsWorker())
                         {
                             new GatherCommand(unit, targetResource, destination).Execute();
                         }
@@ -365,15 +363,15 @@ public class UnitSelectionHandler : MonoBehaviour
                     return;
                 }
 
-                if(targetUnit != null && _selectedUnit.Count > 0 && targetBuilding.IsPlayerBuilding(_player))
+                if (targetUnit != null && _selectedUnit.Count > 0 && targetBuilding.IsPlayerBuilding(_player))
                 {
                     var unit = _selectedUnit[0];
                     var data = targetBuilding.GetBuildData();
-                    if(unit.IsPlayerUnit(_player) && unit.IsWorker())
+                    if (unit.IsPlayerUnit(_player) && unit.IsWorker())
                     {
                         if (GameModManager.IsMultiplayer)
                         {
-                            if(PhotonNetwork.IsMasterClient)
+                            if (PhotonNetwork.IsMasterClient)
                             {
                                 new BuildCommand(unit, targetBuilding.gameObject.transform.position, targetBuilding, data).Execute();
                             }

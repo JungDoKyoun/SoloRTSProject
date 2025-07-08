@@ -108,7 +108,7 @@ public class Player
         }
     }
 
-    public bool IsenoughResources(List<ResourceCost> costs)
+    public bool IsEnoughResources(List<ResourceCost> costs)
     {
         foreach(var cost in costs)
         {

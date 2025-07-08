@@ -127,12 +127,6 @@ public class BuildGhostPlacer : MonoBehaviour
         }
     }
 
-    private void StartBuild(Vector3 des)
-    {
-        //_player.UseResources(_data.ResourceCosts);
-        new BuildCommand(_unit, des, _building, _data).Execute();
-    }
-
     public void UpdateGhost()
     {
         if(_ghost == null)
@@ -169,23 +163,8 @@ public class BuildGhostPlacer : MonoBehaviour
                 }
                 else
                 {
-                    if(_building == null)
-                    {
-                        _building = _ghost.GetComponent<Building>();
-                    }
-                    
-                    _building.Init(_data, _player.PlayerID);
-                    MeshRenderer meshRenderer = _building.GetComponent<MeshRenderer>();
-                    if(meshRenderer != null)
-                    {
-                        BoxCollider boxCollider = _building.AddComponent<BoxCollider>();
-                        boxCollider.center = meshRenderer.bounds.center - _building.transform.position;
-                        boxCollider.size = meshRenderer.bounds.size;
-                    }
-                    _building.AddComponent<NavMeshObstacle>();
-                    var nav = _building.GetComponent<NavMeshObstacle>();
-                    nav.carving = true;
-                    StartBuild(hit.point);
+                    _unit.RequestBuild(hit.point, _data.Name, _player.PlayerID, _unit);
+                    Destroy(_ghost);
                     _ghost = null;
                 }
             }

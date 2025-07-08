@@ -5,4 +5,6 @@ using UnityEngine;
 public interface IResourceDepot
 {
     void ReceiveResource(ResourcesType type, int amount, Player player);
+    Player GetPlayer();
+    Vector3 GetPos();
 }

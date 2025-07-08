@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8328083936949648753}
   - component: {fileID: 1948678643916455316}
   - component: {fileID: -2159984895984808010}
+  - component: {fileID: -8472330508713756260}
   m_Layer: 8
   m_Name: Archery
   m_TagString: Untagged
@@ -139,3 +140,17 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0.072000004, y: -0.039, z: 1.6150001}
   m_TimeToStationary: 0.5
+--- !u!114 &-8472330508713756260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881137243178784548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9ff2a1a9189cbd46831d11741af9af2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  footprintRadius: 2
+  gizmoColor: {r: 1, g: 0, b: 0.09570503, a: 1}

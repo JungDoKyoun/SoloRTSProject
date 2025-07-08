@@ -5,6 +5,16 @@ using UnityEngine;
 
 public class TownHall : ProductionBuilding, IResourceDepot
 {
+    public Player GetPlayer()
+    {
+        return _player;
+    }
+
+    public Vector3 GetPos()
+    {
+        return transform.position;
+    }
+
     public void ReceiveResource(ResourcesType type, int amount, Player player)
     {
         player.AddResources(type, amount);

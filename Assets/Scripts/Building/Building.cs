@@ -70,6 +70,8 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
         }
         else
         {
+            Debug.Log(_buildData.BuildingPrefab);
+            Debug.Log(_buildData.BuildingPrefab.transform.rotation);
             var buildObj = Instantiate(_buildData.BuildingPrefab, pos, _buildData.BuildingPrefab.transform.rotation);
             var building = buildObj.GetComponent<Building>();
             building.Init(_buildData ,_player.PlayerID, _currentHP);

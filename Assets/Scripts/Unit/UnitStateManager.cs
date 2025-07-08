@@ -6,6 +6,8 @@ public class UnitStateManager : MonoBehaviour
 {
     private IUnitState _state;
 
+    public IUnitState State => _state;
+
     private void Update()
     {
         _state?.Update();

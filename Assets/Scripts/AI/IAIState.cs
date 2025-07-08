@@ -44,12 +44,16 @@ public class AIBuildState : IAIState
     private AIPlayer _aiPlayer;
     private AIStateManager _aiStateManager;
     private float _startTime;
+    private float _interval;
+    private float _elapsedTime;
 
     public void Enter(AIPlayer aiPlayer, AIStateManager aiStateManager)
     {
         _aiPlayer = aiPlayer;
         _aiStateManager = aiStateManager;
         _startTime = Time.time;
+        _interval = 5f;
+        _elapsedTime = 0f;
     }
 
     public void Exit()
@@ -59,6 +63,12 @@ public class AIBuildState : IAIState
 
     public void Update()
     {
-        
+        _elapsedTime += Time.deltaTime;
+
+        if (_elapsedTime < _interval)
+            return;
+
+        _aiPlayer.TryBuild();
+        _elapsedTime = 0f;
     }
 }

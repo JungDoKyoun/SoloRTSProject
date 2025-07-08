@@ -27,7 +27,7 @@ public class UnitProductionQueue : MonoBehaviour
             return false;
         }
 
-        if (!_player.IsenoughResources(unitData.Costs))
+        if (!_player.IsEnoughResources(unitData.Costs))
         {
             return false;
         }
