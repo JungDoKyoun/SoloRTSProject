@@ -16,6 +16,8 @@ MonoBehaviour:
   MaxHP: 1800
   Defend: 0
   Sight: 10
+  BuildingRadius: 7.5
+  CanSupply: 0
   SupplyProvided: 0
   IsCanProduceUnits: 0
   TrainableUnits: []

@@ -22,6 +22,7 @@ MonoBehaviour:
   MaxHP: 1500
   Defend: 0
   buildingData: {fileID: 11400000, guid: 272f1d2925559844f97fdc5ff15f62bf, type: 2}
+  BuildingRadius: 6
   ResourceCosts:
   - ResourcesType: 0
     Amount: 0
