@@ -34,26 +34,30 @@ public class AIStartState : IAIState
     {
         if(Time.time - _startTime >= _waitDuration)
         {
-            _aiStateManager.SetState(new AIBuildState(), _aiPlayer, _aiStateManager);
+            _aiStateManager.SetState(new AIMainState(), _aiPlayer, _aiStateManager);
         }
     }
 }
 
-public class AIBuildState : IAIState
+public class AIMainState : IAIState
 {
     private AIPlayer _aiPlayer;
     private AIStateManager _aiStateManager;
-    private float _startTime;
-    private float _interval;
-    private float _elapsedTime;
+    private float _lastBuildCheck;
+    private float _lastTrainCheck;
+    private float _lastWorkerCheck;
+    private float _buildInterval = 5f;
+    private float _trainInterval = 3f;
+    private float _workerInterval = 2f;
 
     public void Enter(AIPlayer aiPlayer, AIStateManager aiStateManager)
     {
         _aiPlayer = aiPlayer;
         _aiStateManager = aiStateManager;
-        _startTime = Time.time;
-        _interval = 5f;
-        _elapsedTime = 0f;
+
+        _lastBuildCheck = Time.time;
+        _lastTrainCheck = Time.time;
+        _lastWorkerCheck = Time.time;
     }
 
     public void Exit()
@@ -63,12 +67,22 @@ public class AIBuildState : IAIState
 
     public void Update()
     {
-        _elapsedTime += Time.deltaTime;
+        if (Time.time - _lastBuildCheck >= _buildInterval)
+        {
+            _aiPlayer.TryBuild();
+            _lastBuildCheck = Time.time;
+        }
 
-        if (_elapsedTime < _interval)
-            return;
+        if (Time.time - _lastTrainCheck >= _trainInterval)
+        {
+            _aiPlayer.TryTrainUnit();
+            _lastTrainCheck = Time.time;
+        }
 
-        _aiPlayer.TryBuild();
-        _elapsedTime = 0f;
+        if (Time.time - _lastWorkerCheck >= _workerInterval)
+        {
+            _aiPlayer.CheckNewWorkers();
+            _lastWorkerCheck = Time.time;
+        }
     }
 }

@@ -6,9 +6,7 @@ public enum TrainConditionType
 {
     Always,
     UntilUnitCount,
-    AfterTime,
     AfterSupply,
-    RequireTech
 }
 
 [System.Serializable]

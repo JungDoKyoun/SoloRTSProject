@@ -1,8 +1,6 @@
 using Photon.Pun;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 public class AIPlayer : MonoBehaviour
@@ -55,7 +53,7 @@ public class AIPlayer : MonoBehaviour
     {
         string[] paths = null;
 
-        switch(race)
+        switch (race)
         {
             case RaceType.Human:
                 paths = new string[]
@@ -71,7 +69,7 @@ public class AIPlayer : MonoBehaviour
 
     private void CheckPhaseTransition()
     {
-        if(_phaseIndex < _aiStrategyData.StrategyPhases.Count)
+        if (_phaseIndex < _aiStrategyData.StrategyPhases.Count - 1)
         {
             float elapseTime = Time.time - _startTime;
 
@@ -85,32 +83,46 @@ public class AIPlayer : MonoBehaviour
 
     public void TryBuild()
     {
+        if (_currentPhase == null || _currentPhase.BuildOrderStep == null || _currentPhase.BuildOrderStep.Count == 0)
+            return;
+
         List<BuildOrderStep> buildOrderSteps = _currentPhase.BuildOrderStep;
 
-        foreach(var buildOrderStep in buildOrderSteps)
+        foreach (var buildOrderStep in buildOrderSteps)
         {
             if (BuildingRegistry.Instance.HasBuilding(_playerID, buildOrderStep.BuildingID))
                 continue;
 
             var buildingData = _aiMapping.GetBuildingByID(buildOrderStep.BuildingID);
 
+            float supplyRatio = (float)_player.CurrentSupply / _player.MaxSupply;
+
+            if (supplyRatio >= 0.8f && _player.MaxSupply < 200)
+            {
+                var houseData = _aiMapping.GetBuildingByID(1);
+                if (houseData != null && houseData.buildingData.CanSupply)
+                {
+                    buildingData = houseData;
+                }
+            }
+
             if (!_player.IsEnoughResources(buildingData.ResourceCosts))
                 continue;
 
-            if(AIUtils.FindBuildPos(_player, buildingData, _searchRadius, out Vector3 buildPos))
+            if (AIUtils.FindBuildPos(_player, buildingData, _searchRadius, out Vector3 buildPos))
             {
                 var workers = UnitRegistry.Instance.AllUnits.FindAll(u => u.Player == _player && u.UnitType == UnitType.Worker);
 
                 UnitController selectworker = workers.FirstOrDefault(u => u.IsIdle());
 
-                if(selectworker == null)
+                if (selectworker == null)
                 {
                     selectworker = workers[0];
                 }
 
-                if(GameModManager.IsMultiplayer)
+                if (GameModManager.IsMultiplayer)
                 {
-                    if(!PhotonNetwork.IsMasterClient)
+                    if (!PhotonNetwork.IsMasterClient)
                     {
                         return;
                     }
@@ -122,6 +134,89 @@ public class AIPlayer : MonoBehaviour
                 {
                     selectworker.RequestBuild(buildPos, buildingData.Name, _playerID, selectworker);
                 }
+
+                break;
+            }
+        }
+    }
+
+    public void TryTrainUnit()
+    {
+        if (_currentPhase == null || _currentPhase.TrainOrderStep == null || _currentPhase.TrainOrderStep.Count == 0)
+            return;
+
+        if (GameModManager.IsMultiplayer && !PhotonNetwork.IsMasterClient)
+            return;
+
+        List<Building> buildings = BuildingRegistry.Instance.GetBuildings(_playerID);
+
+        List<TrainOrderStep> trainOrders = new List<TrainOrderStep>();
+        foreach (var unit in _currentPhase.TrainOrderStep)
+        {
+            if (CheckCondition(unit))
+            {
+                trainOrders.Add(unit);
+            }
+        }
+
+        trainOrders.Sort((a, b) => b.Weight.CompareTo(a.Weight));
+
+        if (trainOrders.Count > 0)
+        {
+            int unitID = trainOrders[0].UnitID;
+            var unitData = _aiMapping.GetUnitByID(unitID);
+
+            foreach (var building in buildings)
+            {
+                if (building is IUnitProducer producer && building.IsUsable() && producer.CanProduce(unitID))
+                {
+                    if (_player.IsCanProduceUnit(unitData.SupplyCost))
+                    {
+                        producer.ProduceUnit(unitData);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private bool CheckCondition(TrainOrderStep step)
+    {
+        switch (step.ConditionType)
+        {
+            case TrainConditionType.Always:
+                return true;
+
+            case TrainConditionType.UntilUnitCount:
+                {
+                    int count = 0;
+                    foreach (var u in UnitRegistry.Instance.AllUnits)
+                    {
+                        if (u.Player == _player && u.UnitData.ID == step.UnitID && !u.IsDestroyed)
+                            count++;
+                    }
+
+                    return count < step.Threshold;
+                }
+
+            case TrainConditionType.AfterSupply:
+                var unitData = _aiMapping.GetUnitByID(step.UnitID);
+                return _player.IsCanProduceUnit(unitData.SupplyCost);
+
+            default:
+                return false;
+        }
+    }
+
+    public void CheckNewWorkers()
+    {
+        var allWorkers = UnitRegistry.Instance.GetAllUnits(_playerID, 0);
+
+        foreach (var worker in allWorkers)
+        {
+            if (worker.IsIdle())
+            {
+                AIWorkerManager.AssignNewWorker(worker, this);
             }
         }
     }

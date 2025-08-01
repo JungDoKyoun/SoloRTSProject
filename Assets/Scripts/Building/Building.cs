@@ -211,4 +211,9 @@ public class Building : MonoBehaviourPunCallbacks, IAttackable
         }
         return false;
     }
+
+    public bool IsUsable()
+    {
+        return IsComplete && !IsDestroyed;
+    }
 }

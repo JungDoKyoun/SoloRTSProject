@@ -1,3 +1,4 @@
+using Palmmedia.ReportGenerator.Core.Reporting.Builders;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,5 +58,20 @@ public class BuildingRegistry : MonoBehaviour
     public bool HasBuilding(int playerID, int buildingID)
     {
         return GetBuildingByID(playerID, buildingID) > 0;
+    }
+
+    public List<Building> GetBuildings(int playerID)
+    {
+        List<Building> result = new List<Building>();
+
+        foreach(var building in _allBuildings)
+        {
+            if(building.Player.PlayerID == playerID && building.IsUsable())
+            {
+                result.Add(building);
+            }
+        }
+
+        return result;
     }
 }
